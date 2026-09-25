@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Josh's Skate Odyssey 2.0</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#090512;font-family:Arial,sans-serif;color:#c77dff;user-select:none;-webkit-user-select:none;touch-action:none}
+#g{position:relative;width:100%;height:100%}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+#hud{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:8px;z-index:5;background:rgba(10,5,20,.85);border:2px solid #8e44ad;border-radius:12px;padding:8px 12px;font-weight:800;font-size:13px;line-height:1.5;min-width:150px}
+#hd{font-size:11px;color:#9fe}
+#saveWarn{font-size:11px;color:#ff9db0;font-weight:800}
+.bar{height:9px;background:#25112f;border:1px solid #b56cff;border-radius:9px;overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8e44ad,#e056fd)}
+#fb{background:linear-gradient(90deg,#3cf,#bff)!important}
+#top{position:absolute;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:10;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:55%}
+#menu{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+button,.fb{border:1px solid #a855f7;background:#160b24;color:#e5b7ff;padding:8px 11px;border-radius:10px;font-weight:800;cursor:pointer;font-size:13px;font-family:inherit}
+button:hover{background:#35124f}
+button:focus-visible,.fb:focus-within{outline:2px solid #ffd34d;outline-offset:2px}
+button.on{background:#5b1f8a;border-color:#ffd34d}
+button.danger{border-color:#ff4d6d;color:#ff9db0;background:#2a0a14}
+button.danger:hover{background:#4a0f22}
+button.big{font-size:20px;padding:14px 28px}
+button:disabled{opacity:.5;cursor:default}
+input[type=file]{display:none}
+#md{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(5,2,12,.88)}
+#pn{width:min(760px,92vw);max-height:88vh;overflow:auto;background:#120a1f;border:2px solid #a855f7;border-radius:20px;padding:22px;text-align:center;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+h1{font-size:clamp(26px,5vw,44px);margin:0 0 8px;color:#d18cff}
+h2{color:#d18cff;margin-top:0}
+p{color:#d9b9ed;margin:6px 0}
+.ctl{font-size:13px}
+.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;text-align:left;margin-top:12px}
+.card{border:1px solid #5b2b73;border-radius:12px;padding:12px;background:#10071a}
+.card.on{border-color:#d18cff;background:#210a33}
+.card.lk{opacity:.55}
+.card h3{margin:0 0 5px;color:#e4b4ff}
+.card button{width:100%;margin-top:8px}
+.price{color:#ffd34d;font-weight:900}
+.row{margin:12px 0;text-align:left}
+input[type=range]{width:55%;vertical-align:middle;accent-color:#a855f7}
+table{width:100%;border-collapse:collapse;color:#e5b7ff}
+td,th{padding:8px;border-bottom:1px solid #3a1650;text-align:left}
+th{color:#ffd34d}
+input[type=password]{width:80%;max-width:300px;padding:10px;border-radius:10px;border:2px solid #a855f7;background:#10071a;color:#fff;font-size:17px;text-align:center;margin:12px 0}
+#tut{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:7;width:min(560px,92vw);background:rgba(18,10,31,.95);border:2px solid #ffd34d;border-radius:14px;padding:8px 14px;text-align:center;box-shadow:0 0 24px rgba(168,85,247,.5)}
+#tut .ts{font-size:11px;font-weight:900;color:#ffd34d;letter-spacing:1px}
+#tut .tt{font-size:15px;font-weight:700;color:#fff;margin:3px 0 7px;line-height:1.35}
+#tut .tt b{color:#ffd34d}
+#tut button{padding:5px 10px;font-size:12px}
+#touch{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:8;display:none;gap:6px}
+#touch button{min-width:48px;height:46px;padding:6px 8px;font-size:12px}
+@media(pointer:coarse){
+  #touch{display:flex;max-width:min(96vw,520px);flex-wrap:wrap;justify-content:center}
+  #tut{bottom:auto;top:calc(168px + env(safe-area-inset-top,0px))}
+}
+@media(max-height:520px){
+  #hud{font-size:11px;padding:5px 8px;min-width:130px;line-height:1.35}
+  #top button,.fb{padding:6px 8px;font-size:12px}
+  #touch button{height:40px}
+  #tut{width:min(440px,46vw)}
+  #tut .tt{font-size:12px}
+}
+@media(pointer:coarse) and (max-height:520px){
+  #tut{bottom:auto;top:calc(8px + env(safe-area-inset-top,0px))}
+}
+</style>
+</head>
+<body>
+<div id="g">
+  <canvas id="c"></canvas>
+  <div id="hud">
+    <div>👤 <span id="hn"></span> <span id="hh"></span></div>
+    <div>🏆 <span id="hs">0</span> 💰 <span id="hc" style="color:#ffd34d">0</span></div>
+    <div>🔥 x<span id="hm">1</span> 🔄 <span id="hr"></span></div>
+    <div id="hl"></div>
+    <div id="hp"></div>
+    <div id="ha"></div>
+    <div id="hd"></div>
+    <div id="saveWarn" class="hidden" role="status">⚠️ Save unavailable — progress may not persist</div>
+    <div class="bar"><i id="bb"></i></div>
+    <div class="bar hidden" id="fw"><i id="fb"></i></div>
+  </div>
+  <div id="top">
+    <button id="rb" class="hidden" style="border-color:#0fc;color:#0fc" data-a="rebirth" aria-label="Rebirth">🔄 REBIRTH</button>
+    <button id="hellHubBtn" class="hidden" style="border-color:#ff542e;color:#ff9270" data-a="hellHub" aria-label="Open afterlife level hub">🔥 AFTERLIFE</button>
+    <button data-a="shop" aria-label="Shop">🛒</button>
+    <button id="mu" data-a="mute" aria-label="Toggle sound">🔊</button>
+    <button data-a="pause" aria-label="Pause">⏸</button>
+    <button data-a="fs" aria-label="Fullscreen">⛶</button>
+    <button data-a="menu" aria-label="Menu">☰</button>
+    <div id="menu" class="hidden">
+      <button data-a="settings" aria-label="Settings">⚙ Settings</button>
+      <button data-a="cheatUI" aria-label="Cheat codes">🔓 Cheat</button>
+      <button data-a="roster" aria-label="Skaters">👥 Mafia</button>
+      <button data-a="scores" aria-label="High scores">🏆 Scores</button>
+      <button data-a="goals" aria-label="Goals">🎯 Goals</button>
+      <label class="fb" aria-label="Upload face photo">📸<input id="ph" type="file" accept="image/*"></label>
+      <button class="danger" data-a="resetAsk" aria-label="Full reset">🗑 Full Reset</button>
+    </div>
+  </div>
+  <div id="tut" class="hidden"></div>
+  <div id="md" class="hidden" role="dialog" aria-modal="true"><div id="pn"></div></div>
+  <div id="touch">
+    <button id="bo" aria-label="Ollie">OLLIE</button>
+    <button id="bd" aria-label="Fast fall">DOWN</button>
+    <button data-k="KeyZ" aria-label="Kickflip">FLIP</button>
+    <button data-k="KeyX" aria-label="Heelflip">HEEL</button>
+    <button data-k="KeyC" aria-label="Grab">GRAB</button>
+    <button data-k="KeyV" aria-label="360">360</button>
+    <button data-k="ShiftLeft" aria-label="Invincible dash, Shift key">SHIFT DASH</button>
+    <button id="bg" aria-label="Use equipped E ability">ABILITY · E</button>
+  </div>
+</div>
+<script>
+"use strict";
+/* =====================================================================
+   JOSH'S SKATE ODYSSEY 2.0
+   1 Helpers · 2 Data · 3 Save · 4 Audio · 5 State · 6 Input · 7 Tutorial
+   8 Spawning & Bosses · 9 Update · 10 Character art · 11 Render · 12 UI · 13 Boot
+   ===================================================================== */
+
+/* ---------- 1. HELPERS ---------- */
+const $ = id => document.getElementById(id);
+const cv = $("c"), ctx = cv.getContext("2d");
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmtClock = n => { n = Math.max(0, Math.ceil(n)); return Math.floor(n / 60) + ":" + String(n % 60).padStart(2, "0"); };
+const rnd = (a, b) => a + Math.random() * (b - a);
+const isTouch = matchMedia("(pointer:coarse)").matches;
+let W = 0, H = 0;
+
+// roundRect fallback for older browsers
+if (typeof CanvasRenderingContext2D !== "undefined" && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    r = Math.min(+r || 0, w / 2, h / 2);
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+  };
+}
+
+/* ---------- 2. DATA ---------- */
+const ABILITIES = [
+  { id: "boost", name: "Speed Boost", cost: 0, desc: "Hold E to spend boost charge for a speed burst. Works in the air." },
+  { id: "runner", name: "Run & Smash", cost: 10000, desc: "Run off your board for 10 seconds, move faster, smash obstacles and enemies, and stay invincible. 10 second cooldown." },
+  { id: "gravity", name: "Gravity Switch", cost: 20000, desc: "Press E to reverse gravity. Press again to switch back. No cooldown." },
+  { id: "goldrush", name: "Gold Rush", cost: 15000, desc: "Earn 3× coins and 2× score for 8 seconds. 25 second cooldown." },
+  { id: "crashout", name: "Patrick's Crashout", cost: 35000, desc: "Patrick pulls a pistol, shakes with rage, and fires 5 spread shots. Each hit deals 50 boss damage. Lasts 7 seconds; 10 second cooldown." },
+  { id: "leftarm", name: "Raji's Left Arm", cost: 25000, desc: "Grow a huge, powerful arm and punch a wide area in front of you for 100 boss damage. Lasts 2 seconds; 3 second cooldown." }
+];
+const abilityDef = id => ABILITIES.find(a => a.id === id) || ABILITIES[0];
+const CFG = { grav: .75, jump: 15, buf: 8, coyote: 7, cut: .82, multCap: 25 };
+
+const LV = [
+  { n: "Level 1 — High School Courtyard 🎒", s: 4,   a: "#29104f", b: "#0b102b", z: ["cone", "cone", "box", "rail", "ramp", "bird"] },
+  { n: "Level 2 — Neon Downtown 🌃",         s: 4.7, a: "#3a145f", b: "#081a38", z: ["cone", "box", "drone", "drone", "copcar", "rail", "ramp"] },
+  { n: "Level 3 — Mega Ramp 🛹",              s: 5.5, a: "#54106b", b: "#07132d", z: ["spike", "spike", "copcar", "drone", "rail", "ramp", "ramp", "box"] },
+  { n: "Level 4 — Purple City 🌆",            s: 6.2, a: "#681b73", b: "#050b20", z: ["spike", "copcar", "drone", "bird", "box", "rail", "ramp"] },
+  { n: "Level 5 — Golden Gateway 🔥",         s: 7,   a: "#8a5200", b: "#240d00", z: ["fire", "fire", "spike", "drone", "copcar", "rail", "ramp"] },
+  { n: "Level 6 — Storm Boardwalk 🌩️",       s: 7.5, a: "#274d79", b: "#071323", z: ["drone", "spike", "copcar", "rail", "ramp", "bird"] },
+  { n: "Level 7 — Shattered Colosseum 🏛️",   s: 8,   a: "#674134", b: "#180d17", z: ["spike", "fire", "box", "rail", "ramp", "drone"] },
+  { n: "Level 8 — Neon Skyway 🌌",            s: 8.5, a: "#123f78", b: "#080521", z: ["drone", "bird", "copcar", "spike", "rail", "ramp"] },
+  { n: "Level 9 — Infernal Foundry ⚒️",      s: 9,   a: "#9a2f16", b: "#230407", z: ["hellfire", "fire", "spike", "hellfire", "rail", "ramp"], hell: 1 },
+  { n: "Level 10 — HEAVEN ☁️✨",              s: 7.6, a: "#fff7d1", b: "#a6e3e9", z: ["cloud", "cloud", "drone", "bird", "spike", "ramp"], h: 1 },
+  { n: "Level 11 — HELL 🔥🌋",                s: 8.4, a: "#ff512f", b: "#240006", z: ["hellfire", "fire", "spike", "hellfire", "rail", "ramp"], hell: 1 }
+];
+const NORMAL_LEVELS = 9, HEAVEN_LEVEL = 10, HELL_LEVEL = 11;
+const LVN = [0, 2500, 7000, 14000, 23000, 35000, 55000];   // legacy score milestones for old saves
+const BOSS_TRAVEL_SECONDS = 60; // active play time before each run's boss
+const NAETO_TRAVEL_SECONDS = 10; // active play time in Hell before Naeto appears
+const BS = [["Bully Brad", "😡"], ["Chief Cop Car", "🚔"], ["Mecha Ramp", "🤖"], ["Purple Dragon", "🐉"], ["Golden Guardian", "🗿"], ["Thunder Bruiser", "🌩️"], ["Wraith Racer", "🏎️"], ["Volcano Golem", "🌋"], ["Storm Colossus", "⛈️"], ["Fallen Angel", "😈"]];
+const nextBossIndex = () => Math.min(save.rebirths, BS.length - 1);
+const maxAirJumps = () => save.rebirths >= 5 ? Infinity : save.rebirths >= 3 ? 3 : save.rebirths >= 1 ? 2 : 1;
+// obstacle types: [width, height, y-offset from ground, emoji]
+const TY = {
+  rail: [220, 32, 40, ""], box: [80, 90, 10, "📦"], bird: [60, 60, -130, "🐦"], cone: [55, 60, 40, "🚧"],
+  copcar: [140, 65, 26, "🚓"], ramp: [160, 45, 55, ""], drone: [60, 50, -90, "🛸"], spike: [110, 40, 47, "🔺"],
+  fire: [50, 120, -20, "🔥"], hellfire: [72, 145, -25, "🔥"], cloud: [90, 55, -100, "⛈️"], shot: [44, 44, 0, "💥"]
+};
+const DF = {
+  chill:  { spd: .9,  gap: 1.25, lives: 8, pts: .8,  label: "😌 Chill" },
+  normal: { spd: 1.1, gap: 1,    lives: 4, pts: 1,   label: "😎 Normal" },
+  hard:   { spd: 1.3, gap: .75,  lives: 3, pts: 1.5, label: "💀 Hard" }
+};
+// skaters: id, rebirths needed, name, perk, shirt, font, aura, hair, points bonus, coin bonus, extra jump power
+const RO = [
+  ["sami", 3, "Sami", "High-Flyer (+15% jump)", "#e74c3c", "#ff6b6b", "rgba(255,107,107,.6)", "#111", 1, 1, 2.25],
+  ["patrick", 0, "Patrick", "Fast boost charge", "#2ecc71", "#2edf71", "rgba(46,223,113,.6)", "#d4ac0d", 1, 1, 0],
+  ["zaraiji", 0, "Zaraiji", "Combo Master", "#3498db", "#00d2ff", "rgba(0,210,255,.6)", "#2c3e50", 1.1, 1, 0],
+  ["adam", 0, "Adam", "Bail Insurance (-50%)", "#f39c12", "#f1c40f", "rgba(241,196,15,.6)", "#7f8c8d", 1, 1, 0],
+  ["callum", 0, "Callum", "Golden Touch (+100% coins)", "#f1c40f", "#ffd700", "rgba(255,215,0,.6)", "#e67e22", 1, 2, 0],
+  ["eric", 0, "Eric", "Speed Demon (+10%)", "#9b59b6", "#e056fd", "rgba(224,86,253,.6)", "#34495e", 1.05, 1, 0],
+  ["suwhan", 0, "Suwhan", "Clean Landing (+500)", "#1abc9c", "#00cec9", "rgba(0,206,201,.6)", "#16a085", 1.1, 1.1, 0],
+  ["jasper", 1, "Jasper", "Holy Grace (+50% flying pts)", "#34495e", "#74b9ff", "rgba(116,185,255,.6)", "#f39c12", 1.3, 1.2, 1.5],
+  ["gabriel", 2, "Gabriel", "Infinite heaven boost & fuel", "#00cec9", "#81ecec", "rgba(129,236,236,.7)", "#ffeaa7", 1.25, 1.5, 2],
+  ["josh", 4, "Josh", "👑 GODFATHER (+150% pts & coins)", "#7b3fb3", "#ffd700", "rgba(255,215,0,.85)", "#4b2414", 2.5, 2.5, 4]
+].map(a => ({ id: a[0], req: a[1], name: a[2], perk: a[3], shirt: a[4], font: a[5], aura: a[6], hair: a[7], pm: a[8], cm: a[9], jb: a[10] }));
+
+// shop: id, slot, name, cost, description, value
+const CAT = [
+  ["board_basic", "board", "Starter Board", 0, "Maple deck", 1],
+  ["board_purple", "board", "Purple Phantom", 250, "+8% speed", 1.08],
+  ["board_neon", "board", "Neon Rocket", 600, "+18% speed", 1.18],
+  ["board_dragon", "board", "Neon Dragon", 2500, "+25% speed", 1.25],
+  ["board_gold", "board", "Golden Limon", 12000, "+35% speed", 1.35],
+  ["board_mafia", "board", "Mafia Gold Executive", 75000, "+60% speed", 1.6],
+  ["hat_basic", "hat", "No Hat", 0, "Classic", 1],
+  ["hat_purple", "hat", "Purple Cap", 180, "+5% points", 1.05],
+  ["hat_fedora", "hat", "Mafia Fedora", 1500, "+10% points", 1.1],
+  ["hat_crown", "hat", "Mini Crown", 7000, "+12% points", 1.12],
+  ["hat_godfather", "hat", "Godfather Crown", 50000, "+25% points", 1.25],
+  ["hat_durag", "hat", "Naeto's Durag", 0, "Naeto's black durag · earned by defeating him", 1],
+  ["shoes_basic", "shoes", "Starter Shoes", 0, "Landing x1", 1],
+  ["shoes_neon", "shoes", "Neon Kicks", 300, "+7% landing", 1.07],
+  ["shoes_gold", "shoes", "Gold Kicks", 9000, "+16% landing", 1.16],
+  ["shoes_diamond", "shoes", "Diamond Kicks", 40000, "+25% landing", 1.25],
+  ["chain_basic", "jewelry", "No Chain", 0, "Clean", 1],
+  ["chain_silver", "jewelry", "Silver Chain", 400, "+8% coins", 1.08],
+  ["chain_gold", "jewelry", "Gold Chain", 10000, "+20% coins", 1.2],
+  ["chain_diamond", "jewelry", "Diamond Pendant", 60000, "+30% coins", 1.3],
+  ["outfit_diamond", "outfit", "💎 Diamond Suit", 100000, "A shimmering ice-blue suit", 1],
+  ["outfit_italian_mafia", "outfit", "🇮🇹 Italian Mafia Trench", 500000, "+200% points!", 3]
+].map(a => ({ id: a[0], slot: a[1], name: a[2], cost: a[3], desc: a[4], v: a[5] }));
+const IC = { board: "🛹", hat: "🎩", shoes: "👟", jewelry: "⛓️", outfit: "🥋" };
+const A = {
+  boss: "🥊 Defeat your first boss", heaven: "☁️ Reach Heaven", stomp: "👟 Stomp 10 bullies", lem: "💵 Collect 100 cash pickups",
+  c10: "🔥 Hit combo x10", reb: "🔄 Rebirth", b5: "💀 Defeat 5 bosses"
+};
+const CHL = [["Land 5 kickflips", "kick", 5], ["Stomp 3 bullies", "stomp", 3], ["Collect 40 cash pickups", "cash", 40],
+  ["Defeat a boss", "boss", 1], ["Reach Level 3", "lvl", 3], ["Land 15 clean landings", "clean", 15]];
+
+/* ---------- 3. SAVE SYSTEM ---------- */
+const SAVE_KEY = "jso5", LEGACY_KEYS = ["josh_skate_save_v4"];
+const localDate = () => {
+  const n = new Date();
+  return n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, "0") + "-" + String(n.getDate()).padStart(2, "0");
+};
+let today = localDate();
+const defaultSave = () => ({
+  coins: 0, rebirths: 0, ability: "boost", abilities: ["boost"], stageVersion: 2,
+  owned: ["board_basic", "hat_basic", "shoes_basic", "chain_basic"],
+  eq: { board: "board_basic", hat: "hat_basic", shoes: "shoes_basic", jewelry: "chain_basic", outfit: "none" },
+  sel: "patrick", hs: {}, cJ: 0, cS: 0, jOn: 0, sOn: 0, diff: "normal", seen: 0, ach: {},
+  tot: { stomp: 0, lem: 0, boss: 0 }, daily: { d: "", p: 0, done: 0 }, cp: { level: 1, score: 0 },
+  muted: 0, vm: 1, vs: 1, fx: matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : 0, photo: "", completedGame: 0, naetoDefeated: 0
+});
+let save = defaultSave(), dirty = false, noSave = false, storageError = false;
+
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem(LEGACY_KEYS[0]);
+    if (!raw) return;
+    const l = JSON.parse(raw), d = defaultSave();
+    save = { ...d, ...l };
+    if (l.infiniteMoney) save.coins = Math.min(1000000, Math.max(0, +l.coins || 0));
+    delete save.infiniteMoney;
+    save.eq = { ...d.eq, ...(l.eq || l.equipped || {}) };
+    save.hs = { ...(l.hs || l.highScores || {}) };
+    save.abilities = Array.isArray(l.abilities) ? [...new Set(["boost", ...l.abilities.filter(id => ABILITIES.some(a => a.id === id))])] : ["boost"];
+    save.ability = save.abilities.includes(l.ability) ? l.ability : "boost";
+    save.sel = l.sel || l.selectedChar || "patrick";
+    save.cJ = l.cJ || l.cheatJosh || 0;
+    save.cS = l.cS || l.cheatSami || 0;
+    if (!l.eq && l.equipped && l.equipped.outfit === "outfit_josh_cheat") save.jOn = 1;
+    save.tot = { ...d.tot, ...l.tot };
+    save.cp = { ...(l.cp || d.cp) };
+    if (!l.stageVersion) {
+      if (save.completedGame && save.cp.level === 7) save.cp.level = HELL_LEVEL;
+      else if (save.cp.level === 6) save.cp.level = HEAVEN_LEVEL;
+      save.stageVersion = 2;
+    }
+    save.naetoDefeated = l.naetoDefeated ? 1 : 0;
+    save.daily = l.daily || d.daily;
+    save.ach = l.ach || {};
+    if (!Array.isArray(save.owned)) save.owned = d.owned;
+    // migrate old high scores (one number per skater) into "skater:normal"
+    for (const k of Object.keys(save.hs)) {
+      if (!k.includes(":")) { save.hs[k + ":normal"] = Math.max(save.hs[k + ":normal"] || 0, save.hs[k]); delete save.hs[k]; }
+    }
+  } catch (e) { storageError = true; /* corrupt or unavailable save: start fresh */ }
+}
+const saveGame = () => {
+  dirty = false;
+  if (noSave) return;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); storageError = false; } catch (e) { storageError = true; dirty = true; }
+  const warning = $("saveWarn"); if (warning) warning.classList.toggle("hidden", !storageError);
+};
+function refreshDaily() {
+  const t = localDate();
+  if (save.daily.d !== t) { today = t; save.daily = { d: t, p: 0, done: 0 }; dirty = true; }
+  today = t;
+}
+const dqi = () => [...today].reduce((a, c) => a + c.charCodeAt(0), 0) % CHL.length;
+
+// cheat passwords are stored as hashes (not readable in the source)
+function hash(s) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) { const ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+const CHEAT_HASH = { "ma0k4tvoy0": "J", "1uidteq1h5o": "S" };
+
+const item = id => CAT.find(x => x.id === id);
+const owned = id => save.owned.includes(id);
+const gear = s => { const x = item(save.eq[s]); return x ? x.v : 1; };
+const rbm = () => 1 + save.rebirths * .5;
+const unlocked = f => save.rebirths >= f.req || (f.id === "josh" && save.cJ) || (f.id === "sami" && save.cS);
+const fr = () => { const f = RO.find(x => x.id === save.sel); return f && unlocked(f) ? f : RO[1]; };
+// multipliers are ADDITIVE (1 + each bonus) and capped, so scores stay sane
+const scoreMult = () => {
+  const outfit = save.jOn && fr().id === "josh" ? 5 : gear("outfit");
+  return Math.min(CFG.multCap, 1 + (fr().pm - 1) + (rbm() - 1) + (gear("hat") - 1) + (outfit - 1));
+};
+const coinMult = () => Math.min(CFG.multCap, 1 + (fr().cm - 1) + (rbm() - 1) + (gear("jewelry") - 1));
+const hsKey = () => fr().id + ":" + save.diff;   // high scores are kept per skater AND difficulty
+
+/* ---------- 4. AUDIO ---------- */
+let AC = null;
+function initAudio() {
+  try {
+    if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return; AC = new C(); }
+    if (AC.state === "suspended") AC.resume();
+  } catch (e) {}
+}
+function beep(f, d = .1, type = "square", f2, v = .06, bus = "sfx") {
+  const vol = bus === "music" ? save.vm : save.vs;
+  if (!AC || save.muted || vol <= 0) return;
+  try {
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(v * vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g); g.connect(AC.destination); o.start(); o.stop(t + d);
+  } catch (e) {}
+}
+const SFX = {
+  jump: () => beep(300, .15, "square", 600),
+  trick: () => { beep(600, .08); setTimeout(() => beep(900, .1), 70); },
+  coin: () => beep(1100, .07, "triangle"),
+  bail: () => beep(200, .3, "sawtooth", 60),
+  land: () => beep(400, .1, "triangle", 200),
+  boss: () => beep(90, .5, "sawtooth", 50, .1),
+  clap: () => { beep(130, .09, "square", 70, .18); setTimeout(() => beep(95, .13, "sawtooth", 55, .12), 35); },
+  crashout: () => { beep(180, .12, "square", 90, .1); setTimeout(() => beep(120, .08, "square", 65, .08), 65); },
+  chirp: () => { beep(1900, .07, "sine", 2600); setTimeout(() => beep(2400, .06, "sine", 1900), 80); },
+  taco: () => { beep(500, .08, "triangle"); setTimeout(() => beep(800, .08, "triangle"), 80); setTimeout(() => beep(1200, .15, "triangle"), 160); }
+};
+const MB = [196, 220, 247, 262, 294, 330], SCALE = [1, 1.25, 1.5, 1.25, 2, 1.5, 1.25, 1];
+let ms = 0;
+function music() {
+  if (G.running && !isPaused()) {
+    const b = MB[G.level - 1] * (G.boss ? 1.5 : 1);
+    beep(b * SCALE[ms % 8] * (G.level > 3 ? 1 : .5), .18, G.level % 2 ? "triangle" : "square", 0, .025, "music");
+    if (ms % 4 === 0) beep(b / 2, .3, "sine", 0, .05, "music");
+    ms++;
+  }
+  setTimeout(music, G.boss ? 150 : 240 - G.level * 12);
+}
+
+/* ---------- 5. STATE ---------- */
+const G = {
+  running: false, userPaused: false, modal: false, mk: "", home: "start",
+  t: 0, aT: 0, score: 0, level: 1, speed: 4, combo: 1, chain: 0, tricks: 0, secretBossTime: 0,
+  used: new Set(), reps: {}, tLast: {}, boost: 0, shake: 0, flash: 0, bgX: 0,
+  spawn: 0, spawnNeed: 60, levelDist: 0, taco: 0, lives: 3, inv: 0, fuel: 100, shield: 0, mag: 0, slow: 0,
+  abilityTime: 0, abilityCooldown: 0, dashTime: 0, dashCooldown: 0, leftArmHit: false, runnerHitCooldown: 0, gravityDir: 1, flightActive: false, crashoutShots: 0, crashoutTimer: 0, bestStart: 0, lastTrick: 0, nextBoss: BOSS_TRAVEL_SECONDS, bossTime: 0, bossIndex: 0, boss: null, tut: null, q: [], img: null, banner: null, overInfo: null,
+  obs: [], cash: [], tac: [], pw: [], pts: [], bul: [], wads: [], crashBullets: [], shards: [], pop: []
+};
+const P = { x: 140, homeX: 140, y: 0, vy: 0, w: 80, h: 100, jump: false, gr: false, rot: 0, rotT: 0, bf: 0, bd: 1, grab: 0, sq: 0, ext: 0, ph: 0, coy: 0, buf: 0, cut: true, mega: false, airJumpsUsed: 0, flipT: 0 };
+const pet = { x: 0, y: 0, t: 0 };
+const brunoPos = { x: 0, y: 0 };
+let keys = {}, last = 0;
+const ground = () => Math.round(H < 520 ? H * .6 : H * .7);
+const isPaused = () => G.userPaused || G.modal;
+const later = (frames, fn) => G.q.push({ t: frames, fn });
+function runQueue(dt) {
+  for (let i = G.q.length - 1; i >= 0; i--) {
+    const e = G.q[i]; e.t -= dt;
+    if (e.t <= 0) { G.q.splice(i, 1); e.fn(); }
+  }
+}
+function resize() {
+  const d = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W * d; cv.height = H * d;
+  ctx.setTransform(d, 0, 0, d, 0, 0);
+  P.homeX = clamp(W * .14, 70, 140);
+  if (!G.abilityTime) P.x = P.homeX;
+}
+const toast = (s, x, y) => { G.pop.push({ t: s, x: x ?? P.x + 40, y: y ?? P.y - 50, l: 1 }); if (G.pop.length > 8) G.pop.shift(); };
+const part = p => { if (G.pts.length < (save.fx ? 90 : 300)) G.pts.push(p); };
+const shakeIt = n => { G.shake = Math.max(G.shake, save.fx ? n * .2 : n); };
+const flashIt = v => { if (!save.fx) G.flash = v; };
+function ach(k) {
+  if (G.tut || save.ach[k]) return;
+  save.ach[k] = 1; dirty = true; toast("🏅 " + A[k].slice(2), W / 2, H * .35);
+}
+function dq(k, n = 1) {
+  if (G.tut) return;
+  const c = CHL[dqi()], d = save.daily;
+  if (d.done || c[1] !== k) return;
+  d.p = k === "lvl" ? Math.max(d.p, n) : d.p + n;
+  if (d.p >= c[2]) { const reward = 3000 * (save.ability === "goldrush" && G.abilityTime > 0 ? 3 : 1); d.done = 1; save.coins += reward; toast("🎯 DAILY DONE! +" + reward.toLocaleString() + "💰", W / 2, H * .35); }
+  dirty = true;
+}
+function addScore(n) {
+  const rush = save.ability === "goldrush" && G.abilityTime > 0 ? 2 : 1;
+  G.score += Math.round(n * rush * scoreMult() * DF[save.diff].pts);
+  if (!G.tut) { const k = hsKey(); if (G.score > (save.hs[k] || 0)) { save.hs[k] = G.score; dirty = true; } }
+}
+function coin(n) { if (G.tut) return; save.coins += Math.round(n * coinMult() * (save.ability === "goldrush" && G.abilityTime > 0 ? 3 : 1)); dirty = true; }
+
+function fireCrashoutRound(index) {
+  const ox = P.x + 66, oy = P.y + 7;
+  const b = G.boss && G.boss.mode !== "dying" ? G.boss : null;
+  const tx = b ? b.x + b.w / 2 : ox + 540, ty = b ? b.y + b.hy + b.h * .48 : oy;
+  const base = Math.atan2(ty - oy, tx - ox), angle = base + (index - 2) * .055;
+  G.crashBullets.push({ x: ox, y: oy, a: angle, v: 20, t: 40 });
+  if (b) {
+    const dx = tx - ox, dy = ty - oy, along = dx * Math.cos(angle) + dy * Math.sin(angle);
+    const cross = Math.abs(dx * Math.sin(angle) - dy * Math.cos(angle));
+    if (along > 0 && along < 820 && cross <= b.w * .47 + 15) {
+      b.hp = Math.max(0, b.hp - 50); b.stun = Math.max(b.stun || 0, 8);
+      toast("💥 BULLET HIT! -50 HP", b.x + b.w / 2, b.y - 22);
+      if (b.hp <= 0) { b.mode = "dying"; b.dying = 0; G.obs = []; G.q = []; shakeIt(16); flashIt(.8); SFX.boss(); }
+    }
+  }
+}
+function punchWithLeftArm() {
+  const b = G.boss && G.boss.mode !== "dying" ? G.boss : null;
+  shakeIt(10); SFX.trick();
+  if (!b) { toast("👊 GIANT LEFT HOOK!"); return; }
+  const armY = P.y + 14, bodyTop = b.y + b.hy, bodyBottom = bodyTop + b.h;
+  const inReach = b.x + b.w >= P.x + 35 && b.x <= P.x + 410;
+  const inLane = bodyBottom >= armY - 105 && bodyTop <= armY + 105;
+  if (!inReach || !inLane) { toast("👊 LEFT ARM PUNCH MISSED!"); return; }
+  b.hp = Math.max(0, b.hp - 100); b.stun = Math.max(b.stun || 0, 14);
+  toast("💪 RAJI'S LEFT ARM! -100 BOSS HP", b.x + b.w / 2, b.y - 24);
+  if (b.hp <= 0) { b.mode = "dying"; b.dying = 0; G.obs = []; G.q = []; shakeIt(16); flashIt(.8); SFX.boss(); }
+}
+function drawRajiArm(c) {
+  if (save.ability !== "leftarm" || G.abilityTime <= 0) return;
+  const elapsed = 2 - G.abilityTime;
+  const growT = clamp(elapsed / .82, 0, 1), growth = (Math.pow(2, growT * 4) - 1) / 15;
+  const punchT = clamp((elapsed - .68) / .38, 0, 1), retract = clamp((elapsed - 1.35) / .4, 0, 1);
+  const reach = 52 + growth * 105 + punchT * (1 - retract) * 205;
+  const thick = 13 + growth * 54 + punchT * (1 - retract) * 15;
+  const sx = P.x + 42, sy = P.y + 12, ex = sx + reach * .48, ey = sy - 12 - growth * 15, wx = sx + reach, wy = sy - 5;
+  c.save(); c.lineCap = c.lineJoin = "round"; c.shadowColor = "#ff6a32"; c.shadowBlur = 18 + growth * 14;
+  const armGrad = c.createLinearGradient(sx, sy, wx, wy); armGrad.addColorStop(0, "#482719"); armGrad.addColorStop(.52, "#70432d"); armGrad.addColorStop(1, "#956344");
+  c.strokeStyle = "#8f543d"; c.lineWidth = thick + 8; c.beginPath(); c.moveTo(sx, sy); c.lineTo(ex, ey); c.lineTo(wx, wy); c.stroke();
+  c.strokeStyle = armGrad; c.lineWidth = thick; c.beginPath(); c.moveTo(sx, sy); c.lineTo(ex, ey); c.lineTo(wx, wy); c.stroke();
+  c.fillStyle = "#70432d"; c.beginPath(); c.ellipse(wx + thick * .28, wy, thick * .86, thick * .7, -.08, 0, TAU); c.fill();
+  c.fillStyle = "#956344";
+  for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(wx + thick * (.1 + i * .34), wy - thick * .33, thick * .2, 0, TAU); c.fill(); }
+  c.strokeStyle = "rgba(255,231,180,.8)"; c.lineWidth = 4 + growth * 4; c.beginPath(); c.moveTo(wx + thick, wy); c.lineTo(wx + thick + 25 + punchT * 18, wy - 14); c.moveTo(wx + thick, wy + 8); c.lineTo(wx + thick + 32 + punchT * 20, wy + 8); c.stroke();
+  c.restore();
+}
+
+/* ---------- 6. GAME FLOW & INPUT ---------- */
+function resetGame(cont) {
+  const D = DF[save.diff];
+  G.bossIndex = nextBossIndex();
+  G.level = cont ? save.cp.level : Math.min(G.bossIndex + 1, NORMAL_LEVELS);
+  G.score = cont ? save.cp.score : 0;
+  G.speed = LV[G.level - 1].s;
+  G.combo = 1; G.chain = 0; G.tricks = 0; G.used.clear(); G.reps = {}; G.tLast = {};
+  G.abilityTime = 0; G.abilityCooldown = 0; G.dashTime = 0; G.dashCooldown = 0; G.leftArmHit = false; G.runnerHitCooldown = 0; G.gravityDir = 1; G.flightActive = false; G.crashoutShots = 0; G.crashoutTimer = 0; G.crashBullets = []; P.x = P.homeX;
+  G.boost = 0; G.shake = 0; G.spawn = 0; G.spawnNeed = 60; G.levelDist = 0; G.bossTime = 0; G.taco = 0; G.lives = D.lives; G.inv = 0;
+  G.banner = null; G.fuel = 100; G.flash = 0; G.shield = G.mag = G.slow = 0;
+  G.boss = null; G.nextBoss = G.level >= HEAVEN_LEVEL ? Infinity : BOSS_TRAVEL_SECONDS; G.secretBossTime = 0; G.shards = []; G.t = 0; G.q = []; G.tut = null;
+  G.bestStart = save.hs[hsKey()] || 0;
+  G.obs = []; G.cash = []; G.tac = []; G.pw = []; G.pts = []; G.bul = []; G.wads = []; G.crashBullets = []; G.shards = []; G.pop = [];
+  Object.assign(P, { y: ground(), vy: 0, jump: false, gr: false, rot: 0, rotT: 0, bf: 0, grab: 0, sq: 0, ext: 0, coy: 0, buf: 0, cut: true, mega: false, airJumpsUsed: 0, flipT: 0 });
+  pet.x = P.x - 25; pet.y = P.y - 55;
+  brunoPos.x = P.x - 92; brunoPos.y = ground() + 96;
+  $("rb").classList.toggle("hidden", G.level < HEAVEN_LEVEL);
+  hideTut();
+  updHUD();
+}
+function go(cont) {
+  initAudio(); X(); refreshDaily();
+  G.running = true;
+  if (!cont) save.cp = { level: 1, score: 0 };
+  resetGame(cont);
+  if (cont && G.level === HELL_LEVEL) { save.completedGame = 1; hellHub(); }
+  dirty = true;
+}
+function play() { save.seen ? go(false) : startTutorial(); }
+
+const TR = {
+  KeyZ: ["KICKFLIP 🛹", 150, "f", 1, "#00e5ff"],
+  KeyX: ["HEELFLIP 🔥", 180, "f", -1, "#ff8a3d"],
+  KeyC: ["SUPERMAN GRAB 🦸", 220, "g", 0, "#ffe14d"],
+  KeyV: ["360 NO-SCOPE 🎯", 350, "s", 1, "#ff4dd8"]
+};
+function ollie() {
+  P.vy = -(CFG.jump + fr().jb) * G.gravityDir; P.jump = true; P.gr = false; P.ext = 1; P.coy = 0; P.buf = 0; P.cut = false; P.airJumpsUsed = 0;
+  G.tricks = 0; G.used.clear(); G.reps = {};
+  SFX.jump(); addScore(50); toast("OLLIE! +50");
+  tutEvent("ollie");
+}
+function trick(k) {
+  const now = performance.now();
+  if (now - (G.tLast[k] || 0) < 320) return;          // per-trick cooldown: no mashing one key
+  G.tLast[k] = now;
+  const [nm, pp, ty, d, col] = TR[k];
+  const rep = G.reps[k] || 0, fresh = rep === 0;
+  G.reps[k] = rep + 1; G.tricks++; G.used.add(k);
+  G.chain += fresh ? (fr().id === "zaraiji" ? 1.5 : 1) : .15;   // combo grows from DIFFERENT tricks & clean landings
+  G.combo = Math.min(10, 1 + Math.floor(G.chain / 2));
+  if (ty === "f") { P.bf = 1; P.bd = d; } else if (ty === "g") P.grab = 1; else P.rotT += 720 * d;
+  const gain = Math.round(pp * G.combo * (1 + .25 * (G.used.size - 1)) * (fresh ? 1 : Math.pow(.35, rep)) * (P.mega ? 2 : 1));
+  addScore(gain); coin(fresh ? 8 + G.combo * 2 : 2);
+  G.boost = Math.min(100, G.boost + (fresh ? (fr().id === "patrick" ? 9 : 6) : 1.5));
+  G.banner = { n: nm + (G.used.size > 1 ? " +CHAIN" : "") + (fresh ? "" : " (repeat)"), p: gain, c: col, t: 0, m: G.combo };
+  G.lastTrick = now;
+  for (let i = 0; i < 22; i++) { const a = Math.random() * TAU, s = Math.random() * 6 + 2; part({ x: P.x + 40, y: P.y + 30, vx: Math.cos(a) * s, vy: Math.sin(a) * s, c: col, s: Math.random() * 5 + 2, l: 1 }); }
+  SFX.trick(); if (save.sOn) SFX.chirp();
+  if (k === "KeyZ" && fresh) dq("kick");
+  if (G.combo >= 10) ach("c10");
+  tutEvent("trick");
+}
+function doubleJump() {
+  P.airJumpsUsed++; P.vy = -(CFG.jump + fr().jb) * G.gravityDir; P.jump = true; P.gr = false; P.ext = 1; P.cut = true; P.mega = false;
+  P.rotT += 360; P.flipT = 42; P.sq = .8;
+  for (let i = 0; i < 18; i++) { const a = Math.random() * TAU, v = rnd(2, 6); part({ x: P.x + 40, y: P.y + 45, vx: Math.cos(a) * v, vy: Math.sin(a) * v, c: i % 2 ? "#ffd34d" : "#e056fd", s: rnd(3, 6), l: 1 }); }
+  SFX.jump(); toast("BACKFLIP! " + (maxAirJumps() === Infinity ? "∞" : Math.max(0, maxAirJumps() - P.airJumpsUsed) + " air jumps left"));
+}
+function act(k) {
+  if (!G.running || isPaused()) return;
+  if (k === "Space" || k === "ArrowUp") {
+    if (!P.jump || P.gr || P.coy > 0) ollie();
+    else if (!P.gr && P.airJumpsUsed < maxAirJumps() && !personalFlightActive()) doubleJump();
+    else P.buf = CFG.buf;
+  } else if (TR[k] && P.jump) trick(k);
+  else if (k === "ShiftLeft" || k === "ShiftRight") useDash();
+  else if (k === "KeyE") useAbility();
+}
+function releaseJump() {                             // variable jump height (keyboard): let go early = short hop
+  if (!P.cut && P.vy * G.gravityDir < -4 && G.level !== HEAVEN_LEVEL) { P.vy *= CFG.cut; }
+  P.cut = true;
+}
+addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") { if (e.key === "Enter" && e.target.id === "pw") cheat(); return; }
+  keys[e.code] = true;
+  if (["Space", "ArrowUp", "ArrowDown"].includes(e.code)) e.preventDefault();
+  if (e.repeat) return;
+  if (e.code === "KeyQ") { e.preventDefault(); togglePersonalFlight(); return; }
+  if (e.code === "KeyP" || e.code === "Escape") { pause(); return; }
+  if (!G.running && G.modal && (e.code === "Enter" || e.code === "KeyR") && (G.mk === "start" || G.mk === "over")) {
+    e.preventDefault(); G.mk === "over" ? go(false) : play(); return;
+  }
+  act(e.code);
+});
+addEventListener("keyup", e => { keys[e.code] = false; if (e.code === "Space" || e.code === "ArrowUp") releaseJump(); });
+addEventListener("blur", () => { keys = {}; });
+
+const holdBtn = (id, k) => {
+  const b = $(id);
+  b.addEventListener("touchstart", e => { e.preventDefault(); keys[k] = true; act(k); }, { passive: false });
+  const up = e => { e.preventDefault(); keys[k] = false; };
+  b.addEventListener("touchend", up, { passive: false });
+  b.addEventListener("touchcancel", up, { passive: false });
+};
+holdBtn("bo", "Space"); holdBtn("bd", "ArrowDown"); holdBtn("bg", "KeyE");
+document.querySelectorAll("#touch button[data-k]").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); act(b.dataset.k); }));
+let ts = null;
+cv.addEventListener("touchstart", e => { e.preventDefault(); const q = e.changedTouches[0]; ts = { x: q.clientX, y: q.clientY }; if (G.level === HEAVEN_LEVEL && G.running) keys.Space = true; }, { passive: false });
+cv.addEventListener("touchend", e => {
+  e.preventDefault(); keys.Space = false;
+  if (!ts || !G.running || isPaused()) { ts = null; return; }
+  const q = e.changedTouches[0], dx = q.clientX - ts.x, dy = q.clientY - ts.y; ts = null;
+  if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) { if (P.jump) act(dx < 0 ? "KeyZ" : "KeyX"); }
+  else if (dy < -35) { if (P.jump && !P.gr) act("KeyV"); else act("Space"); }
+  else if (dy > 35) { if (P.jump) P.vy = Math.max(P.vy, 20); }
+  else act("Space");
+}, { passive: false });
+cv.addEventListener("touchcancel", () => { keys.Space = false; ts = null; });
+
+/* ---------- 7. TUTORIAL ---------- */
+const TUT_STEPS = [
+  { ev: "ollie", pc: "Tap <b>SPACE</b> (or <b>↑</b>) for a short hop; hold for extra height. Press jump again in the air to backflip and double-jump.", mo: "Tap <b>OLLIE</b> for a short hop or hold for more height; tap again in the air to backflip and double-jump!" },
+  { ev: "clean", pc: "Jump, then press <b>Z</b> in the air for a <b>KICKFLIP</b> — and land it for a clean-landing bonus!", mo: "Jump, then <b>swipe ←</b> in the air (or tap <b>FLIP</b>) and land it clean!" },
+  { ev: "chain", pc: "Mix tricks for a <b>CHAIN</b>! Two different keys in one jump: <b>Z</b> flip · <b>X</b> heelflip · <b>C</b> grab · <b>V</b> 360", mo: "Chain two different tricks in one jump: <b>swipe ←</b> flip · <b>→</b> heelflip · <b>↑</b> 360 (or use the trick buttons)" },
+  { ev: "cash", pc: "Collect the 💵 cash bundles for coins and boost charge!", mo: "Collect 💵 cash for coins and boost charge!" },
+  { ev: "dodge", pc: "Obstacles hurt! <b>Jump over</b> the cone 🚧. (Look out for 🌮 super boost, 🛡️ shield, 🧲 magnet.)", mo: "Obstacles hurt! <b>Jump over</b> the cone 🚧." },
+  { ev: "glide", pc: "Hold <b>E</b> to use your equipped ability. Your starter speed boost works in the air too, without lifting you. <b>SHIFT</b> is your invincible dash.", mo: "Hold the ability button for the starter speed boost, even in the air; use SHIFT DASH to dash!" },
+  { ev: null, pc: "Last tip: your boss appears after one minute of active movement. Stomp from above to deal damage; hold <b>↓</b> or <b>S</b> for a 2× smash. Defeating a boss sends you to Heaven; the final boss sends you to Hell. Rebirth to face the next rival.", mo: "Your boss appears after one minute of active movement. Land on top to deal damage; hold <b>DOWN</b> while stomping for 2× damage. Defeat the final boss to reach Hell; rebirth to challenge the rivals again." }
+];
+function startTutorial() {
+  initAudio(); X();
+  G.running = true; resetGame(false);
+  G.level = 1; G.speed = LV[0].s; G.nextBoss = Infinity;
+  G.tut = { i: 0, delay: 0, glide: 0, coneT: 0, cashT: 0 };
+  tutEnter(0); showTut();
+}
+function showTut() {
+  const T = G.tut, el = $("tut");
+  if (!T) { el.classList.add("hidden"); return; }
+  const s = TUT_STEPS[T.i], last = T.i === TUT_STEPS.length - 1;
+  el.classList.remove("hidden");
+  el.innerHTML = `<div class="ts">TUTORIAL · STEP ${T.i + 1} OF ${TUT_STEPS.length}</div><div class="tt">${isTouch ? s.mo : s.pc}</div><div>${last ? '<button class="on" data-a="tutDone">🚀 Start skating!</button> ' : ""}<button data-a="tutSkip">Skip tutorial</button></div>`;
+}
+function hideTut() { $("tut").classList.add("hidden"); }
+function spawnCash() { for (let i = 0; i < 4; i++) G.cash.push({ x: W + 100 + i * 65, y: ground() - 120 - Math.sin(i / 3 * Math.PI) * 85, r: 20 }); }
+function tutEnter(i) {
+  const ev = TUT_STEPS[i].ev;
+  if (ev === "cash") spawnCash();
+  if (ev === "dodge") G.boost = 0;
+  if (ev === "glide") G.boost = 100;
+}
+function tutEvent(ev) {
+  const T = G.tut;
+  if (!T || T.delay > 0 || !TUT_STEPS[T.i] || TUT_STEPS[T.i].ev !== ev) return;
+  T.i++; T.delay = 42; SFX.coin(); toast("✅ Nice!", W / 2, H * .38);
+  $("tut").innerHTML = '<div class="tt">✅ Nice!</div>';
+}
+function tutUpdate(dt) {
+  const T = G.tut, s = TUT_STEPS[T.i];
+  if (T.delay > 0) { T.delay -= dt; if (T.delay <= 0) { showTut(); tutEnter(T.i); } return; }
+  if (!s) return;
+  if (s.ev === "cash" && !G.cash.length) { T.cashT += dt; if (T.cashT > 25) { T.cashT = 0; spawnCash(); } }
+  if (s.ev === "dodge" && !G.obs.some(o => o.tutCone)) { T.coneT += dt; if (T.coneT > 45) { T.coneT = 0; mk("cone", W + 50).tutCone = true; } }
+  if (s.ev === "glide") {
+    G.boost = 100;
+    if (keys.KeyE) { T.glide += dt; if (T.glide > 40) tutEvent("glide"); }
+  }
+}
+function endTutorial() { save.seen = 1; saveGame(); G.tut = null; hideTut(); go(false); }
+
+/* ---------- 8. SPAWNING & BOSSES ---------- */
+function mk(ty, x) {
+  const d = TY[ty], y = ground() + d[2];
+  const o = { x, y, by: y, w: d[0], h: d[1], type: ty, ph: Math.random() * 6, vx: 0 };
+  G.obs.push(o);
+  return o;
+}
+function spawnStuff(dt) {
+  G.spawn += dt;
+  if (G.spawn < G.spawnNeed) return;
+  G.spawn = 0;
+  const D = DF[save.diff], L = LV[G.level - 1], g = ground(), pick = () => L.z[Math.random() * L.z.length | 0];
+  const first = mk(pick(), W + 50);
+  let span = first.w;
+  if (Math.random() < .18 + G.level * .05 + (save.diff === "hard" ? .15 : 0)) {
+    // gap is derived from speed so every pair can be cleared with separate jumps
+    const gap = G.speed * 17 + Math.random() * G.speed * 8;
+    const second = mk(pick(), W + 50 + first.w + gap);
+    span += gap + second.w;
+  }
+  spawnCash();
+  if (Math.random() < .3) G.tac.push({ x: W + 180, y: g - 110 });
+  if (Math.random() < .1) G.pw.push({ x: W + 320, y: g - 100, t: ["shield", "mag", "slow"][Math.random() * 3 | 0] });
+  if (Math.random() < .03) G.pw.push({ x: W + 400, y: g - 100, t: "life" });
+  if (G.level === 1 && Math.random() < .6) G.bul.push({ x: W + 60, y: g + 60, t: 0, st: 0, q: Math.random() < .5 ? `HA! Freshman ${fr().name}!` : "Look at the Freshman lol!" });
+  const base = Math.max(38, 88 - G.level * 5) * D.gap * (save.diff === "normal" ? 1.2 : 1);
+  G.spawnNeed = Math.max(base, span / G.speed + 30);
+}
+
+// Every boss uses the same readable red dash, with escalating speed, reach,
+// width, and a different vertical sweep so later rivals take more timing skill.
+const BOSS_VARIANTS = [
+  { speed: 6.0, wind: 82, arc: 18,  length: .48, width: 92,  height: 94,  style: "quick curved ground dash" },
+  { speed: 6.5, wind: 84, arc: 42,  length: .56, width: 104, height: 104, style: "rising curved dash" },
+  { speed: 7.0, wind: 86, arc: 67,  length: .64, width: 116, height: 116, style: "arching dash" },
+  { speed: 7.5, wind: 88, arc: 94,  length: .72, width: 128, height: 128, style: "high sweeping curve" },
+  { speed: 8.0, wind: 90, arc: 122, length: .80, width: 140, height: 138, style: "wide rising arc" },
+  { speed: 8.5, wind: 92, arc: 151, length: .88, width: 150, height: 146, style: "rolling thunder curve" },
+  { speed: 9.0, wind: 94, arc: 181, length: .96, width: 160, height: 154, style: "coiling skyway dash" },
+  { speed: 9.5, wind: 96, arc: 212, length: 1.04, width: 170, height: 162, style: "towering corkscrew arc" },
+  { speed: 10,  wind: 98, arc: 244, length: 1.12, width: 180, height: 170, style: "colossal looping sweep" },
+  { speed: 10.5,wind: 100,arc: 278, length: 1.20, width: 192, height: 180, style: "fallen angel grand curve" }
+];
+const bossCd = () => Math.max(150, 210 - G.bossIndex * 8) * (save.diff === "hard" ? .95 : 1);
+function startBoss() {
+  const info = BS[G.bossIndex], v = BOSS_VARIANTS[G.bossIndex];
+  const hp = 500;
+  G.boss = { n: info[0], e: info[1], hp, hpv: hp, max: hp, x: W + 140, y: ground() + 100 - v.height, w: v.width, h: v.height, t: 0, mode: "enter", cd: 70, inv: 0, stun: 0,
+    wind: 0, wmax: v.wind, phase: 0, kb: 0, hy: 0, sx: 1, sy: 1, tilt: 0, vx: 0, dying: 0, chargeSpeed: v.speed, chargeArc: v.arc, chargeStartX: 0, chargeTargetX: 0 };
+  G.obs = []; G.cash = []; G.bul = []; G.wads = []; G.shards = []; G.q = [];
+  toast("⚠️ BOSS: " + info[0] + " · " + v.style + " · JUMP ON TOP TO HIT!", W / 2, H * .3); SFX.boss(); shakeIt(15);
+}
+function bossFire(b) {
+  const v = BOSS_VARIANTS[G.bossIndex];
+  b.chargeSpeed = v.speed; b.chargeArc = v.arc;
+  // Carry the dash fully across the skater so its attack always passes through
+  // the player's lane and leaves a clear opportunity to stomp it.
+  b.chargeStartX = b.x; b.chargeTargetX = Math.min(P.x - v.width - 30, b.x - Math.max(220, W * v.length)); b.mode = "charge";
+  SFX.boss(); shakeIt(6);
+}
+function startNaeto() {
+  const h = 330, w = 240, hp = 2500;
+  G.boss = { secret: true, n: "Naeto", e: "", hp, hpv: hp, max: hp, x: P.x + 110, y: ground() + 100 - h, w, h, hy: 0, t: 0, mode: "enter", timer: 0, claps: 0, headInv: 0, dying: 0 };
+  G.lives = DF[save.diff].lives; G.inv = 0; G.obs = []; G.cash = []; G.bul = []; G.wads = []; G.shards = [];
+  toast("👑 SECRET BOSS: NAETO! DODGE HIS CLAPS!", W / 2, H * .28); SFX.boss(); shakeIt(13); updHUD();
+}
+function sendNaetoShrapnel(b) {
+  const x = b.x + 34, y = ground() - 112;
+  for (let i = 0; i < 11; i++) {
+    const spread = (i - 5) * .13, speed = 7.1 + (i % 3) * .45;
+    G.shards.push({ x, y: y + (i - 5) * 2, vx: -Math.cos(spread) * speed, vy: Math.sin(spread) * speed, r: 13, life: 115, spin: Math.random() * 6 });
+  }
+  SFX.clap(); shakeIt(8); toast(`👏 CLAP ${b.claps}/3 · DODGE THE SHARDS!`, W * .66, H * .38);
+}
+function updNaeto(dt) {
+  const b = G.boss, gy = ground();
+  b.t += dt; b.y = gy + 100 - b.h; b.headInv = Math.max(0, b.headInv - dt);
+  b.hpv += (b.hp - b.hpv) * Math.min(1, .12 * dt);
+  if (b.mode === "enter") {
+    const target = P.x + 110; b.x += (target - b.x) * Math.min(1, .07 * dt);
+    if (Math.abs(target - b.x) < 8) { b.x = target; b.mode = "windup"; b.timer = 0; }
+  } else if (b.mode === "windup") {
+    b.x += (P.x + 110 - b.x) * Math.min(1, .04 * dt); b.timer += dt;
+    if (b.timer >= 54) { b.claps++; b.mode = "clap"; b.timer = 0; sendNaetoShrapnel(b); }
+  } else if (b.mode === "clap") {
+    b.timer += dt;
+    if (b.timer >= 28) {
+      b.timer = 0;
+      if (b.claps >= 3) { b.mode = "tired"; toast("😮‍💨 NAETO'S TIRED! STOMP HIS DURAG!", W / 2, H * .32); }
+      else b.mode = "windup";
+    }
+  } else if (b.mode === "tired") {
+    b.x += (P.x - 65 - b.x) * Math.min(1, .09 * dt); b.timer += dt;
+    if (b.timer >= 360) { b.claps = 0; b.timer = 0; b.mode = "windup"; toast("⚠️ NAETO IS BACK UP!"); }
+  } else if (b.mode === "dying") {
+    b.dying += dt;
+    if (b.dying > 75) { defeat(); return; }
+  }
+}
+function finishBossDash(b) {
+  b.dashEndX = b.x; b.hy = 0; b.x = W + 160; b.mode = "enter"; b.cd = bossCd();
+}
+function updBoss(dt) {
+  const b = G.boss, gy = ground(), track = gy + 100, ease = k => 1 - Math.exp(-k * dt);
+  const home = clamp(W - 190, P.x + 190, Math.max(P.x + 190, W - 130)), near = P.x + 10;
+  const mid = (home + near) / 2, amp = (home - near) / 2, px = b.x;
+  b.t += dt; b.y = track - b.h;
+  if (b.inv > 0) b.inv -= dt;
+  if (b.stun > 0) b.stun -= dt;
+  b.hpv += (b.hp - b.hpv) * Math.min(1, .12 * dt);
+  switch (b.mode) {
+    case "enter":                                   // glide in from the right
+      b.x += (home - b.x) * ease(.05);
+      if (Math.abs(home - b.x) < 8) { b.mode = "patrol"; b.phase = 0; if (b.cd < 40) b.cd = 40; }
+      break;
+    case "patrol": {                                // smooth sweep toward the skater and back
+      b.phase += dt * .014 * (1 + G.level * .07);
+      b.x += (mid + amp * Math.cos(b.phase) - b.x) * ease(.1);
+      b.cd -= dt;
+      if (b.cd <= 0 && b.stun <= 0 && b.x > P.x + 150) {
+        const v = BOSS_VARIANTS[G.bossIndex];
+        b.mode = "wind"; b.wind = 0; b.wmax = v.wind;
+      }
+      break;
+    }
+    case "wind":                                    // telegraph: crouch, glow, "!" marker
+      b.wind += dt;
+      b.x += 1.2 * dt;
+      if (b.wind >= b.wmax) bossFire(b);
+      break;
+    case "charge":
+      b.x = Math.max(b.chargeTargetX, b.x - (b.chargeSpeed + (save.diff === "hard" ? .5 : 0)) * dt);
+      if (b.chargeArc) {
+        const span = Math.max(1, b.chargeStartX - b.chargeTargetX);
+        const travel = clamp((b.chargeStartX - b.x) / span, 0, 1);
+        b.hy = -Math.sin(travel * Math.PI) * b.chargeArc;
+      }
+      part({ x: b.x + b.w * .5, y: gy + 100 + b.hy, vx: rnd(2, 6), vy: rnd(-3, 0), c: "#fff", s: rnd(3, 6), l: .8 });
+      if (b.x <= b.chargeTargetX) finishBossDash(b);
+      break;
+    case "dying":
+      b.dying += dt;
+      if (Math.random() < .5) part({ x: b.x + rnd(0, 120), y: b.y + rnd(0, 120), vx: rnd(-6, 6), vy: rnd(-8, 2), c: "#ffd34d", s: rnd(3, 7), l: 1 });
+      if (b.dying > 75) { defeat(); return; }
+      break;
+  }
+  if (Math.abs(b.kb) > .1) { b.x += b.kb * dt; b.kb *= Math.pow(.88, dt); } else b.kb = 0;   // smooth knock-back
+  b.vx = (b.x - px) / Math.max(dt, .001);
+  b.tilt += (clamp(b.vx * .018, -.2, .2) - b.tilt) * ease(.15);
+  let tsx = 1, tsy = 1;                             // squash & stretch
+  if (b.mode === "wind") { const k = clamp(b.wind / b.wmax, 0, 1); tsx = 1 + .14 * k; tsy = 1 - .18 * k; }
+  else if (b.inv > 40) { tsx = 1.15; tsy = .85; }
+  b.sx += (tsx - b.sx) * ease(.25); b.sy += (tsy - b.sy) * ease(.25);
+  if (b.mode !== "dying" && b.mode !== "enter" && Math.random() < .08 * dt) G.cash.push({ x: W + 50, y: gy - 100 - Math.random() * 80, r: 20 });
+}
+function stompBoss(b) {
+  P.vy = -15 * G.gravityDir; P.jump = true; P.gr = false; P.cut = true; G.inv = Math.max(G.inv, 28);
+  if (b.inv > 0) return;                            // bounce off harmlessly while he flashes
+  const smash = !!(keys.ArrowDown || keys.KeyS);
+  const damage = smash ? 60 : 30;
+  b.hp = Math.max(0, b.hp - damage); b.inv = 22; b.stun = 34; b.kb = 11;
+  if (b.mode === "wind" || b.mode === "charge") { b.mode = "patrol"; b.cd = bossCd(); b.hy = 0; }
+  addScore(smash ? 1000 : 500); SFX.trick(); shakeIt(12); toast(smash ? "💥 SMASH HIT! -60 HP" : "💥 HIT! -30 HP", b.x + 60, b.y - 20);
+  for (let i = 0; i < 20; i++) part({ x: b.x + 60, y: b.y + 30, vx: (Math.random() - .5) * 10, vy: -Math.random() * 8, c: "#ff5", s: 4, l: 1 });
+  if (b.hp <= 0) { b.mode = "dying"; b.dying = 0; b.hy = 0; G.obs = []; G.q = []; shakeIt(16); flashIt(.8); SFX.boss(); }
+}
+function defeat() {
+  const secret = !!(G.boss && G.boss.secret);
+  G.boss = null; G.q = []; G.obs = [];
+  if (secret) {
+    addScore(5000); coin(2500); shakeIt(20); flashIt(1); SFX.taco();
+    G.level = HELL_LEVEL; G.nextBoss = Infinity; G.secretBossTime = 0; save.naetoDefeated = 1;
+    if (!owned("hat_durag")) save.owned.push("hat_durag"); save.eq.hat = "hat_durag"; G.shards = []; G.lives = DF[save.diff].lives;
+    save.cp = { level: HELL_LEVEL, score: G.score }; saveGame(); toast("🔥 NAETO DEFEATED! DURAG UNLOCKED · return to Hell to challenge him again.", W / 2, H * .3); updHUD(); return;
+  }
+  addScore(2000 * G.level); coin(400 * G.level); G.lives = Math.min(5, G.lives + 1);
+  shakeIt(20); flashIt(1); SFX.taco(); ach("boss"); dq("boss");
+  if (!G.tut && ++save.tot.boss >= 5) ach("b5");
+  for (let i = 0; i < 60; i++) { const a = Math.random() * TAU, s = Math.random() * 9 + 2; part({ x: P.x + 200, y: ground() + 40, vx: Math.cos(a) * s, vy: Math.sin(a) * s, c: "#ffd34d", s: Math.random() * 6 + 2, l: 1 }); }
+  const finalBoss = G.bossIndex === BS.length - 1;
+  G.level = finalBoss ? HELL_LEVEL : HEAVEN_LEVEL; G.nextBoss = Infinity; G.levelDist = 0;
+  if (finalBoss) { G.lives = DF[save.diff].lives; G.secretBossTime = 0; save.naetoDefeated = 0; toast("🔥 FINAL BOSS DEFEATED! Welcome to HELL · rebirth to face the rivals again", W / 2, H * .3); }
+  else { dq("lvl", 6); ach("heaven"); toast("☁️ BOSS DEFEATED! Heaven reached · Rebirth for the next boss", W / 2, H * .3); }
+  $("rb").classList.remove("hidden");
+  save.cp = { level: G.level, score: G.score }; dirty = true;
+  if (finalBoss) { save.completedGame = 1; saveGame(); hellHub(); }
+}
+function hurt(a) {
+  if ((G.level >= HEAVEN_LEVEL && !(G.boss && G.boss.secret)) || abilityActive() || G.inv > 0 || G.tut || (G.boss && G.boss.mode === "dying")) return;
+  if (G.shield > 0) { G.shield = 0; G.inv = 60; shakeIt(8); SFX.land(); toast("🛡️ SHIELD BROKE!"); return; }
+  SFX.bail(); G.combo = 1; G.chain = 0; G.tricks = 0; G.used.clear(); G.reps = {}; P.mega = false;
+  shakeIt(18); G.inv = 150;
+  G.score = Math.max(0, G.score - Math.round(a * (fr().id === "adam" ? .5 : 1)));
+  G.lives--; toast("BAIL! 😵 -1 ❤️");
+  P.vy = -10; P.jump = true; P.gr = false; P.cut = true;
+  if (G.lives <= 0) gameOver();
+}
+function touchdown(air) {
+  if (air && G.tricks > 0) {
+    addScore((fr().id === "suwhan" ? 350 : 175) * G.combo * gear("shoes"));
+    coin(18 + G.combo * 3); toast("CLEAN LANDING! ⭐"); G.boost = Math.min(100, G.boost + 10); SFX.land(); dq("clean");
+    tutEvent("clean"); if (G.used.size >= 2) tutEvent("chain");
+  }
+  P.mega = false; G.tricks = 0; G.used.clear(); G.reps = {};
+  if (P.buf > 0) { P.buf = 0; ollie(); }            // buffered jump
+}
+
+/* ---------- 9. UPDATE ---------- */
+function update(dt) {
+  const prevY = P.y;
+  const prevBoss = G.boss, prevBossTop = prevBoss ? prevBoss.y + prevBoss.hy : 0, prevBossX = prevBoss ? prevBoss.x : 0, prevBossMode = prevBoss ? prevBoss.mode : "";
+  const L = LV[G.level - 1], D = DF[save.diff], heaven = !!L.h, gab = heaven && fr().id === "gabriel";
+  G.t += dt; G.aT += .08 * dt;
+  G.speed = (L.s * 1.15 + Math.min(1.2, G.levelDist * .00015)) * D.spd * gear("board") * (fr().id === "eric" ? 1.1 : 1) + (G.taco > 0 ? 4.5 : 0);
+  if (G.taco > 0) G.taco -= dt;
+  if (G.inv > 0) G.inv -= dt;
+  G.abilityCooldown = Math.max(0, G.abilityCooldown - dt / 60);
+  G.dashTime = Math.max(0, G.dashTime - dt / 60);
+  G.dashCooldown = Math.max(0, G.dashCooldown - dt / 60);
+  G.runnerHitCooldown = Math.max(0, G.runnerHitCooldown - dt / 60);
+  G.abilityTime = Math.max(0, G.abilityTime - dt / 60);
+  if (save.ability === "crashout" && G.abilityTime > 0) {
+    G.crashoutTimer -= dt / 60; shakeIt(.7);
+    if (G.crashoutShots < 5 && G.crashoutTimer <= 0) {
+      fireCrashoutRound(G.crashoutShots++); G.crashoutTimer = .22; shakeIt(4); SFX.crashout();
+    }
+  }
+  if (save.ability === "leftarm" && G.abilityTime > 0 && !G.leftArmHit && 2 - G.abilityTime >= .82) {
+    G.leftArmHit = true; punchWithLeftArm();
+  }
+  for (let i = G.crashBullets.length - 1; i >= 0; i--) {
+    const q = G.crashBullets[i]; q.x += Math.cos(q.a) * q.v * dt; q.y += Math.sin(q.a) * q.v * dt; q.t -= dt;
+    if (q.t <= 0 || q.x < -60 || q.x > W + 60 || q.y < -60 || q.y > H + 60) G.crashBullets.splice(i, 1);
+  }
+  G.flash = Math.max(0, G.flash - .03 * dt);
+  if (G.slow > 0) { G.slow -= dt; G.speed *= .65; }
+  if (G.mag > 0) G.mag -= dt;
+  P.buf = Math.max(0, P.buf - dt); P.coy = Math.max(0, P.coy - dt);
+  runQueue(dt);
+  if (gab) G.boost = 100;
+  const speedBoost = save.ability === "boost" && keys.KeyE && G.boost > 0;
+  if (speedBoost) {
+    G.speed *= 1.4;
+    if (!gab) G.boost = Math.max(0, G.boost - .4 * dt);
+    part({ x: P.x, y: P.y + 90, vx: -Math.random() * 6 - 2, vy: (Math.random() - .5) * 3, c: "#e056fd", s: Math.random() * 8 + 4, l: 1 });
+  }
+  if (G.dashTime > 0) { G.speed *= 3.2; P.x = Math.min(W * .56, P.x + 13 * dt); }
+  else if (P.x > P.homeX) P.x += (P.homeX - P.x) * Math.min(1, .11 * dt);
+  if (runnerActive()) G.speed *= 1.85;
+  G.bgX -= G.speed * .35 * dt;
+  if (G.tut) tutUpdate(dt);
+  else if (G.boss) { if (G.boss.secret) updNaeto(dt); else updBoss(dt); }
+  else {
+    G.levelDist += G.speed * dt;
+    if (G.level < HEAVEN_LEVEL) G.bossTime += dt / 60;
+    if (G.level === HELL_LEVEL && !save.naetoDefeated) G.secretBossTime += dt / 60;
+    spawnStuff(dt);
+    if (G.level < HEAVEN_LEVEL && G.bossTime >= G.nextBoss) startBoss();
+    else if (G.level === HELL_LEVEL && !save.naetoDefeated && G.secretBossTime >= NAETO_TRAVEL_SECONDS) startNaeto();
+  }
+
+  const customFlight = personalFlightActive();
+  const fly = (heaven || customFlight) && (keys.Space || keys.ArrowUp) && (customFlight || G.fuel > 0 || gab);
+  if (fly) {
+    P.vy -= 1.6 * G.gravityDir * dt; if (P.vy * G.gravityDir < -10) P.vy = -10 * G.gravityDir; P.jump = true;
+    if (!gab && !customFlight) G.fuel = Math.max(0, G.fuel - .8 * dt);
+    addScore(1.2 * dt * (fr().id === "jasper" ? 1.5 : 1));
+  } else {
+    P.vy += CFG.grav * G.gravityDir * dt;
+    if (heaven && !gab) G.fuel = Math.min(100, G.fuel + (P.y >= ground() - 2 ? 1.5 : .12) * dt);
+  }
+  if ((keys.ArrowDown || keys.KeyS) && P.jump && !fly) P.vy += 1.1 * G.gravityDir * dt;
+  P.y += P.vy * dt;
+  if (G.gravityDir > 0 && P.y > ground()) { P.y = ground(); P.vy = 0; }
+  if (G.gravityDir < 0 && P.y < 40) { P.y = 40; P.vy = 0; }
+  P.bf = Math.max(0, P.bf - .05 * dt); P.grab = Math.max(0, P.grab - .03 * dt);
+  P.rot += (P.rotT - P.rot) * Math.min(1, .15 * dt); P.flipT = Math.max(0, P.flipT - dt);
+  P.sq = Math.max(0, P.sq - .07 * dt); P.ext = Math.max(0, P.ext - .06 * dt);
+  if (!P.jump && !P.gr) { P.ph += G.speed * .09 * dt; P.airJumpsUsed = 0; }
+  if (G.banner) { G.banner.t += dt; if (G.banner.t > 70) G.banner = null; }
+  if (G.combo > 1 && performance.now() - G.lastTrick > 2500 && !P.jump) { G.combo = 1; G.chain = 0; }
+  if (save.sOn && fr().id === "sami") {
+    if (Math.random() < .5) part({ x: P.x + 40 + (Math.random() - .5) * 60, y: P.y + Math.random() * 100, vx: -1 - Math.random() * 2, vy: Math.random() * 1.5, c: Math.random() < .5 ? "#39aaff" : "#9cecff", s: Math.random() * 3 + 1.5, l: .9 });
+    pet.t += .2 * dt; pet.x += (P.x - 25 - pet.x) * .1 * dt; pet.y += (P.y - 55 + Math.sin(pet.t * 1.5) * 7 - pet.y) * .1 * dt;
+  }
+  if (save.jOn && fr().id === "josh") {
+    brunoPos.x += (P.x - 94 - brunoPos.x) * Math.min(1, .18 * dt);
+    brunoPos.y = ground() + 96 + Math.abs(Math.sin(G.aT * 12)) * 2;
+  }
+
+  // rails
+  let rail = false, railLanded = false;
+  const wasAir = P.jump && !P.gr;
+  for (const o of G.obs) {
+    if (o.type === "rail" && P.x + P.w > o.x && P.x < o.x + o.w && P.y + P.h >= o.y && P.y + P.h <= o.y + 20 + Math.abs(P.vy) && P.vy >= 0) {
+      rail = true;
+      if (!P.gr) { P.gr = true; railLanded = true; toast("RAIL GRIND! 🛹"); }
+      P.y = o.y - P.h; P.vy = 0; P.jump = false; P.rot = P.rotT = 0; addScore(3 * dt);
+    }
+  }
+  if (railLanded) touchdown(wasAir);
+  if (!rail && P.gr) { P.gr = false; P.jump = true; P.coy = CFG.coyote; }
+  if (P.gr && Math.random() < .6) part({ x: P.x + 20, y: P.y + P.h + 2, vx: -Math.random() * 4 - 1, vy: -Math.random() * 3, c: "#ffd700", s: Math.random() * 4 + 2, l: .8 });
+  // ground
+  const landed = G.gravityDir > 0 ? P.y >= ground() : P.y <= 40;
+  if (landed && !rail) {
+    const wasAirborne = P.jump;
+    P.y = G.gravityDir > 0 ? ground() : 40; P.vy = 0; P.jump = false; P.rot = P.rotT = 0; P.bf = 0; P.grab = 0;
+    if (wasAirborne) { P.sq = 1; P.airJumpsUsed = 0; touchdown(true); }
+  }
+
+  const hb = { x: P.x + 23, y: P.y + 7, w: 34, h: 86 }, cx = P.x + 40, cy = P.y + 16;
+  for (let i = G.shards.length - 1; i >= 0; i--) {
+    const q = G.shards[i]; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += .11 * dt; q.life -= dt; q.spin += .16 * dt;
+    if (hb.x < q.x + q.r && hb.x + hb.w > q.x - q.r && hb.y < q.y + q.r && hb.y + hb.h > q.y - q.r) {
+      G.shards.splice(i, 1); hurt(260); toast("🩸 SHARD HIT! DODGE THE CLAP!");
+    } else if (q.life <= 0 || q.x < -80 || q.x > W + 80 || q.y > H + 100) G.shards.splice(i, 1);
+  }
+  // obstacles
+  for (let i = G.obs.length - 1; i >= 0; i--) {
+    const o = G.obs[i];
+    o.x -= (G.speed + o.vx) * dt;
+    if (o.type === "drone") o.y = o.by + Math.sin(G.t * .05 + o.ph) * 55;
+    if (o.type === "cloud") { o.by += .35 * dt; o.y = o.by + Math.sin(G.t * .04 + o.ph) * 40; }
+    if (o.wave) o.y = o.by + Math.sin(G.t * .09 + o.ph) * o.wave;
+    if (o.vy) {
+      o.y += o.vy * dt; if (o.ay) o.vy += o.ay * dt;
+      if (o.floor !== undefined && o.y >= o.floor) { o.y = o.floor; o.vy = 0; o.ay = 0; }
+    }
+    if (o.tutCone && !o.passed && o.x + o.w < P.x) { o.passed = true; tutEvent("dodge"); }
+    const hit = hb.x < o.x + o.w && hb.x + hb.w > o.x && hb.y < o.y + o.h && hb.y + hb.h > o.y;
+    if (hit && o.type !== "rail") {
+      if (o.type === "ramp") {
+        const mega = G.level === 3;
+        P.vy = (mega ? -23 : -19) * G.gravityDir; P.jump = true; P.gr = false; P.ext = 1; P.cut = true; P.mega = mega;
+        G.tricks = 0; G.used.clear(); G.reps = {};
+        addScore(mega ? 250 : 100); toast(mega ? "MEGA RAMP! 2x TRICKS 🚀" : "RAMP LAUNCH! 🚀"); SFX.jump(); o.x = -999;
+      } else if (G.tut) {
+        G.obs.splice(i, 1); toast("Jump over obstacles! 😅"); continue;
+      } else if (runnerActive()) {
+        G.obs.splice(i, 1); addScore(450); coin(20); toast("RUN SMASH! 💥"); shakeIt(5); SFX.coin(); continue;
+      } else if (G.taco > 0) {
+        G.obs.splice(i, 1); addScore(400); coin(25); toast("SMASH! ⚡"); shakeIt(10); SFX.coin(); continue;
+      } else { G.obs.splice(i, 1); hurt(o.dmg || 200); continue; }
+    }
+    if (o.x + o.w < -50 || o.y > H + 100) G.obs.splice(i, 1);
+  }
+  // cash pickups
+  for (let i = G.cash.length - 1; i >= 0; i--) {
+    const l = G.cash[i]; l.x -= G.speed * dt;
+    let dx = cx - l.x, dy = cy - l.y, d = Math.hypot(dx, dy) || 1;
+    if (G.mag > 0 && d < 280) { l.x += dx / d * 9 * dt; l.y += dy / d * 9 * dt; d = Math.hypot(cx - l.x, cy - l.y); }
+    if (d < 55) {
+      G.cash.splice(i, 1); SFX.coin(); coin(20); addScore(100); G.boost = Math.min(100, G.boost + 18); toast("CASH COLLECTED! 💵"); dq("cash");
+      tutEvent("cash"); if (!G.tut && ++save.tot.lem >= 100) ach("lem");
+    } else if (l.x < 0) G.cash.splice(i, 1);
+  }
+  // tacos
+  for (let i = G.tac.length - 1; i >= 0; i--) {
+    const q = G.tac[i]; q.x -= G.speed * dt;
+    if (Math.hypot(cx - (q.x + 20), cy - (q.y + 20)) < 55) { G.tac.splice(i, 1); SFX.coin(); coin(150); addScore(600); G.boost = 100; G.taco = 180; toast("🌮 SPICY TACO BOOST!"); }
+    else if (q.x < 0) G.tac.splice(i, 1);
+  }
+  // power-ups
+  for (let i = G.pw.length - 1; i >= 0; i--) {
+    const p = G.pw[i]; p.x -= G.speed * dt;
+    if (Math.hypot(cx - p.x, cy - p.y) < 55) {
+      G.pw.splice(i, 1); SFX.coin();
+      if (p.t === "shield") { G.shield = 1; toast("🛡️ SHIELD!"); }
+      else if (p.t === "mag") { G.mag = 420; toast("🧲 MAGNET!"); }
+      else if (p.t === "slow") { G.slow = 300; toast("⏳ SLOW-MO!"); }
+      else { G.lives = Math.min(5, G.lives + 1); toast("❤️ EXTRA LIFE!"); }
+    } else if (p.x < -40) G.pw.splice(i, 1);
+  }
+  // bullies + paper wads
+  for (let i = G.bul.length - 1; i >= 0; i--) {
+    const b = G.bul[i]; b.x -= G.speed * .8 * dt; b.t += .05 * dt;
+    if (!b.st && Math.random() < .03 * dt) G.wads.push({ x: b.x, y: b.y - 20, vx: -Math.random() * 4 - 4, vy: -Math.random() * 2 });
+    const overlapsBully = hb.x < b.x + 20 && hb.x + hb.w > b.x - 20 && hb.y < b.y + 20 && hb.y + hb.h > b.y - 45;
+    if (!b.st && runnerActive() && G.runnerHitCooldown <= 0 && overlapsBully) {
+      b.st = 1; G.runnerHitCooldown = .35; addScore(500); coin(40); toast("RUN OVER! +500 💥"); SFX.trick(); dq("stomp");
+      if (!G.tut && ++save.tot.stomp >= 10) ach("stomp");
+    } else if (!b.st && G.gravityDir > 0 && P.vy > 0 && hb.x < b.x + 18 && hb.x + hb.w > b.x - 18 && hb.y + hb.h > b.y - 45 && hb.y + hb.h < b.y + 20) {
+      b.st = 1; P.vy = -12 * G.gravityDir; addScore(300); coin(30); toast("BULLY STOMPED! +300 👟"); SFX.trick(); dq("stomp");
+      if (!G.tut && ++save.tot.stomp >= 10) ach("stomp");
+    }
+    if (b.x < -100 || (b.st && (b.sT = (b.sT || 0) + dt) > 30)) G.bul.splice(i, 1);
+  }
+  for (let i = G.wads.length - 1; i >= 0; i--) {
+    const p = G.wads[i]; p.x += p.vx * dt; p.y += p.vy * dt;
+    if (hb.x < p.x + 5 && hb.x + hb.w > p.x - 5 && hb.y < p.y + 5 && hb.y + hb.h > p.y - 5) {
+      G.wads.splice(i, 1);
+      if (G.inv <= 0) { G.score = Math.max(0, G.score - 50); G.combo = 1; G.chain = 0; shakeIt(6); G.inv = 40; SFX.bail(); toast("📄 PAPER WAD! -50"); }
+    } else if (p.x < -50) G.wads.splice(i, 1);
+  }
+  // boss body: land on top = damage, side contact = ouch
+  const finishedDashThisFrame = G.boss && G.boss.mode === "enter" && prevBoss === G.boss && prevBossMode === "charge";
+  if (G.boss && !G.boss.secret && G.boss.mode !== "dying" && (G.boss.mode !== "enter" || finishedDashThisFrame)) {
+    const b = G.boss, bodyTop = b.y + b.hy, bodyBottom = bodyTop + b.h;
+    const top = bodyTop + Math.min(16, b.h * .12), feet = P.y + 96, prevFeet = prevY + 96;
+    // Sweep both bodies between frames: fast dashes and tall arcs can cross
+    // the rider's lane before a point-in-time overlap check ever sees them.
+    const oldX = prevBoss === b ? prevBossX : b.x, newX = finishedDashThisFrame ? b.dashEndX : b.x;
+    const sweptLeft = Math.min(oldX, newX) + b.w * .015, sweptRight = Math.max(oldX, newX) + b.w * .985;
+    const horizontalOverlap = hb.x < sweptRight && hb.x + hb.w > sweptLeft;
+    const stompTolerance = Math.max(34, b.h * .3);
+    const cameFromAbove = prevFeet <= (prevBoss === b ? prevBossTop : bodyTop) + stompTolerance;
+    const descendedOntoTop = feet >= top - Math.max(18, b.h * .12);
+    const stomp = horizontalOverlap && G.gravityDir > 0 && P.vy > 0 && cameFromAbove && descendedOntoTop;
+    const bodyOverlap = horizontalOverlap && hb.y < bodyBottom && hb.y + hb.h > bodyTop + 4;
+    if (stomp) {
+      P.y = top - 96; if (finishedDashThisFrame) b.mode = "charge"; stompBoss(b);
+    } else if (bodyOverlap) {
+      if (runnerActive() && G.runnerHitCooldown <= 0 && b.inv <= 0) {
+        G.runnerHitCooldown = .45; b.hp = Math.max(0, b.hp - 30); b.inv = 16; b.stun = 24; addScore(500); toast("RUN HIT! -30 BOSS HP 💥", W / 2, H * .28);
+        if (b.hp <= 0) { b.mode = "dying"; b.dying = 0; G.obs = []; G.q = []; shakeIt(16); flashIt(.8); SFX.boss(); }
+      }
+      else if (!abilityActive() && b.inv <= 0 && G.inv <= 0) hurt(220);
+    }
+  }
+  if (G.boss && G.boss.secret && G.boss.mode === "tired" && G.boss.headInv <= 0) {
+    const b = G.boss, headX = b.x + b.w * .5, headTop = ground() - 48, feet = P.y + 96, prevFeet = prevY + 96;
+    const overlapsHead = hb.x < headX + 58 && hb.x + hb.w > headX - 58;
+    if (overlapsHead && G.gravityDir > 0 && P.vy > 0 && prevFeet <= headTop + 14 && feet >= headTop - 5) {
+      P.y = headTop - 96; P.vy = -15 * G.gravityDir; P.jump = true; P.gr = false; P.cut = true;
+      const smash = !!(keys.ArrowDown || keys.KeyS), damage = smash ? 200 : 100;
+      b.hp = Math.max(0, b.hp - damage); b.headInv = 34; b.stun = 16; G.inv = Math.max(G.inv, 18);
+      toast(smash ? `💥 DURAG SMASH! -${damage} NAETO HP` : `👟 HEAD STOMP! -${damage} NAETO HP`, headX, headTop - 12);
+      shakeIt(12); SFX.trick();
+      if (b.hp <= 0) { b.mode = "dying"; b.dying = 0; G.shards = []; G.obs = []; G.q = []; flashIt(.8); SFX.boss(); }
+    }
+  }
+  for (let i = G.pts.length - 1; i >= 0; i--) { const p = G.pts[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.l -= .04 * dt; if (p.l <= 0) G.pts.splice(i, 1); }
+  for (let i = G.pop.length - 1; i >= 0; i--) { const p = G.pop[i]; p.y -= .8 * dt; p.l -= .02 * dt; if (p.l <= 0) G.pop.splice(i, 1); }
+  if (!gab) G.boost = Math.min(100, G.boost + .03 * dt);
+}
+
+/* ---------- 10. CHARACTER ART ---------- */
+const BD = {
+  board_basic: ["#d9a866", "#8a5a2b"], board_purple: ["#a86bff", "#4b1d8f"], board_neon: ["#00f0ff", "#0a4cff"],
+  board_dragon: ["#22c55e", "#b3121f"], board_gold: ["#ffe066", "#b8860b"], board_mafia: ["#1a1a1a", "#d4af37"]
+};
+function drawBoard(c, id) {
+  const [a, b] = BD[id] || BD.board_basic;
+  c.save();
+  if (id === "board_neon") { c.shadowColor = a; c.shadowBlur = 12; }
+  const g = c.createLinearGradient(0, -5, 0, 5); g.addColorStop(0, a); g.addColorStop(1, b);
+  c.fillStyle = g;
+  c.beginPath(); c.roundRect(-46, -4, 92, 8, 4); c.fill();
+  c.beginPath();
+  c.moveTo(-46, -3); c.lineTo(-57, -9); c.lineTo(-57, -5); c.lineTo(-46, 4);
+  c.moveTo(46, -3); c.lineTo(57, -9); c.lineTo(57, -5); c.lineTo(46, 4);
+  c.fill();
+  c.shadowBlur = 0; c.fillStyle = "#8b8f99"; c.fillRect(-36, 4, 10, 4); c.fillRect(26, 4, 10, 4);
+  c.fillStyle = "#f4f4f4";
+  for (const x of [-31, 31]) { c.beginPath(); c.arc(x, 11, 6, 0, TAU); c.fill(); }
+  c.restore();
+}
+function hat(c, id) {
+  c.save();
+  if (id === "hat_purple") {
+    c.fillStyle = "#7a3dd0"; c.beginPath(); c.arc(0, -2, 16, Math.PI, 0); c.fill();
+    c.fillStyle = "#3f1d75"; c.beginPath(); c.ellipse(15, -1, 14, 3, 0, 0, TAU); c.fill();
+  } else if (id === "hat_fedora") {
+    c.fillStyle = "#1e1e1e"; c.beginPath(); c.ellipse(0, -3, 25, 6, 0, 0, TAU); c.fill(); c.fillRect(-13, -24, 26, 22);
+    c.fillStyle = "#7a1f1f"; c.fillRect(-13, -9, 26, 5);
+  } else if (id === "hat_durag") {
+    c.fillStyle = "#090a0d"; c.beginPath(); c.moveTo(-15, 1); c.quadraticCurveTo(-18, -21, 0, -22); c.quadraticCurveTo(18, -21, 15, 1); c.quadraticCurveTo(7, -4, 0, -3); c.quadraticCurveTo(-8, -4, -15, 1); c.fill();
+    c.fillStyle = "#17191f"; c.beginPath(); c.moveTo(7, -17); c.quadraticCurveTo(22, -25, 22, -18); c.lineTo(19, 1); c.lineTo(14, 0); c.closePath(); c.fill();
+    c.strokeStyle = "#343740"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-13, -1); c.quadraticCurveTo(0, 3, 14, -1); c.stroke();
+  } else if (id === "hat_crown" || id === "hat_godfather") {
+    const n = id === "hat_crown" ? 3 : 5, h = id === "hat_crown" ? 16 : 26;
+    c.translate(0, -4); c.fillStyle = "#7b1fa2"; c.fillRect(-13, -3, 26, 5);
+    c.fillStyle = "#ffd34d"; c.beginPath(); c.moveTo(-13, -2); c.lineTo(-13, -h / 2);
+    for (let i = 0; i < n; i++) { c.lineTo(-13 + 26 * (i + .5) / n, -h); c.lineTo(-13 + 26 * (i + 1) / n, -h / 2); }
+    c.lineTo(13, -2); c.fill();
+  }
+  c.restore();
+}
+function shoe(c, id) {
+  const S = { shoes_basic: ["#f2f2f2", "#bbb"], shoes_neon: ["#39ff14", "#0a8a00"], shoes_gold: ["#ffd700", "#a87900"], shoes_diamond: ["#d6f6ff", "#6cc8ee"], jordan1: ["#f5f5f5", "#e8e8e8"] }[id] || ["#f2f2f2", "#bbb"];
+  const g = c.createLinearGradient(0, -10, 0, 3); g.addColorStop(0, S[0]); g.addColorStop(1, S[1]);
+  c.fillStyle = g;
+  c.beginPath(); c.moveTo(-10, -10); c.lineTo(-10, 3); c.lineTo(16, 3); c.quadraticCurveTo(21, 3, 21, -2); c.quadraticCurveTo(11, -4, 5, -9); c.fill();
+  if (id === "jordan1") { c.fillStyle = "#d3111f"; c.fillRect(-10, -10, 8, 13); c.fillRect(8, -4, 12, 5); c.fillStyle = "#111"; c.fillRect(-2, -6, 10, 2); }
+  c.fillStyle = id === "jordan1" ? "#d3111f" : "#fff"; c.fillRect(-11, 3, 33, 4);
+  c.fillStyle = "#555"; c.fillRect(-11, 6.5, 33, 1.5);
+}
+function chain(c, id) {
+  if (id === "chain_basic") return;
+  c.strokeStyle = c.fillStyle = id === "chain_silver" ? "#dfe3ea" : id === "chain_gold" ? "#ffd700" : "#bff3ff";
+  c.lineWidth = 2; c.beginPath(); c.moveTo(-8, -15); c.quadraticCurveTo(0, 14, 10, -15); c.stroke();
+  c.beginPath(); c.arc(1, 3, 4.5, 0, TAU); c.fill();
+}
+function torso(c, st, col, nm, fc) {
+  c.textBaseline = "middle";
+  const p = () => { c.beginPath(); c.moveTo(-12, -22); c.quadraticCurveTo(0, -27, 13, -22); c.lineTo(12, 6); c.lineTo(-11, 6); c.closePath(); };
+  p(); c.fillStyle = { mf: "#151515", kg: "#7b2fb3", mx: "#0a6b3d", dm: "#7ddcf2" }[st] || col; c.fill();
+  if (st === "mf") { c.fillStyle = "#f2f2f2"; c.beginPath(); c.moveTo(1, -24); c.lineTo(12, -23); c.lineTo(7, -3); c.fill(); c.fillStyle = "#d18cff"; c.fillRect(5.5, -21, 3, 17); }
+  if (st === "kg") { c.fillStyle = "#ffd700"; c.fillRect(3, -23, 4, 29); }
+  if (st === "mx") {
+    c.fillStyle = "#fff"; c.fillRect(4, -23, 3, 29); c.fillStyle = "#d3111f"; c.fillRect(-12, -24, 25, 3);
+    c.font = "900 5px Arial"; c.textAlign = "center"; c.fillStyle = "#fff"; c.fillText("MÉXICO", -3, -12);
+  }
+  p();
+  const g = c.createLinearGradient(-12, 0, 13, 0); g.addColorStop(0, "rgba(0,0,0,.35)"); g.addColorStop(.6, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(255,255,255,.1)");
+  c.fillStyle = g; c.fill();
+  if (st === "dm") {
+    c.fillStyle = "#f4ffff"; c.beginPath(); c.moveTo(-2, -23); c.lineTo(4, -15); c.lineTo(-2, -7); c.lineTo(-8, -15); c.closePath(); c.fill();
+    for (const [x, y] of [[-7, -3], [6, 1], [-4, -18]]) {
+      c.fillStyle = "#eaffff"; c.beginPath(); c.moveTo(x, y - 3); c.lineTo(x + 3, y); c.lineTo(x, y + 3); c.lineTo(x - 3, y); c.closePath(); c.fill();
+    }
+    c.strokeStyle = "rgba(255,255,255,.85)"; c.lineWidth = 1; c.beginPath(); c.moveTo(-10, 5); c.lineTo(10, 5); c.stroke();
+  }
+  if (nm) { c.font = "900 6px Impact,Arial"; c.textAlign = "center"; c.fillStyle = fc; c.fillText(nm.toUpperCase(), 0, -2); }
+}
+function blueJay(c, x, y, s, phase) {
+  c.save(); c.translate(x, y); c.rotate(Math.sin(phase) * .16);
+  const flap = Math.sin(phase * 2.5) * .42;
+  c.fillStyle = "#124b91"; c.beginPath(); c.moveTo(-s * .22, 0); c.lineTo(-s * 1.05, -s * (.14 + flap * .16)); c.lineTo(-s * .56, s * .2); c.closePath(); c.fill();
+  c.save(); c.translate(-s * .12, -s * .1); c.rotate(flap); c.fillStyle = "#176fc1"; c.beginPath(); c.ellipse(-s * .22, -s * .3, s * .48, s * .21, -.26, 0, TAU); c.fill(); c.fillStyle = "#0c3977"; c.beginPath(); c.ellipse(-s * .3, -s * .31, s * .25, s * .095, -.28, 0, TAU); c.fill(); c.restore();
+  c.fillStyle = "#1979c9"; c.beginPath(); c.ellipse(0, 0, s * .57, s * .34, -.12, 0, TAU); c.fill();
+  c.fillStyle = "#eaf5ff"; c.beginPath(); c.ellipse(s * .05, s * .13, s * .31, s * .16, -.1, 0, TAU); c.fill();
+  c.fillStyle = "#267fce"; c.beginPath(); c.arc(s * .4, -s * .2, s * .29, 0, TAU); c.fill();
+  c.fillStyle = "#eaf5ff"; c.beginPath(); c.ellipse(s * .42, -s * .08, s * .18, s * .11, -.2, 0, TAU); c.fill();
+  c.fillStyle = "#111b2b"; c.beginPath(); c.arc(s * .48, -s * .24, Math.max(1, s * .045), 0, TAU); c.fill();
+  c.fillStyle = "#f5c34d"; c.beginPath(); c.moveTo(s * .64, -s * .2); c.lineTo(s * .94, -s * .11); c.lineTo(s * .64, -s * .04); c.closePath(); c.fill();
+  c.fillStyle = "#4c9be0"; c.beginPath(); c.moveTo(s * .31, -s * .44); c.lineTo(s * .43, -s * .72); c.lineTo(s * .53, -s * .4); c.closePath(); c.fill();
+  c.restore();
+}
+function flightWings(c, color) {
+  const flap = Math.sin(G.aT * 5) * .2;
+  c.save(); c.globalAlpha = .94; c.shadowColor = color; c.shadowBlur = 16;
+  for (const side of [-1, 1]) {
+    c.save(); c.translate(side * 8, -16); c.scale(side, 1); c.rotate(-.12 + flap);
+    c.fillStyle = color; c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(20, -42, 68, -46); c.quadraticCurveTo(61, -29, 52, -19); c.quadraticCurveTo(67, -20, 73, -12); c.quadraticCurveTo(49, -8, 36, 5); c.quadraticCurveTo(20, 12, 0, 0); c.fill();
+    c.globalAlpha = .72; c.strokeStyle = "#d9f2ff"; c.lineWidth = 3; c.lineCap = "round";
+    for (let i = 0; i < 5; i++) { c.beginPath(); c.moveTo(8 + i * 5, -2 + i * 1.5); c.quadraticCurveTo(33 + i * 4, -20 - i * 4, 65 - i * 6, -40 + i * 6); c.stroke(); }
+    c.restore();
+  }
+  c.restore();
+}
+function aura(c, st) {
+  const f = fr(), flying = personalFlightActive(), sami = (save.sOn && f.id === "sami") || (flying && f.id === "sami"), josh = (save.jOn && f.id === "josh") || (flying && f.id === "josh");
+  const rush = save.ability === "goldrush" && G.abilityTime > 0, pr = 60 + Math.sin(G.aT * 2) * 8;
+  const g = c.createRadialGradient(0, -10, 10, 0, -10, pr + 10);
+  g.addColorStop(0, sami ? "rgba(20,150,255,.62)" : josh ? "rgba(154,58,255,.82)" : rush ? "rgba(255,202,55,.7)" : st === "kg" ? "rgba(255,0,85,.8)" : st === "mf" ? "rgba(255,215,0,.8)" : st === "mx" ? "rgba(0,200,90,.7)" : f.aura);
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = g; c.beginPath(); c.arc(0, -10, pr + 10, 0, TAU); c.fill();
+  if (flying) flightWings(c, f.id === "sami" ? "#2c9cff" : "#9b43ff");
+  if (sami) for (let i = 0; i < 6; i++) {
+    const a = G.aT * 1.1 + i * TAU / 6, r = 58 + Math.sin(G.aT * 2 + i) * 12;
+    blueJay(c, Math.cos(a) * r, -18 + Math.sin(a) * 42, 17, G.aT * 1.8 + i);
+  }
+  if (flying && f.id === "sami") for (let i = 0; i < 4; i++) {
+    const rise = (G.aT * .36 + i * .25) % 1, side = i % 2 ? 1 : -1;
+    blueJay(c, side * (48 - rise * 28), 34 - rise * 55, 14, G.aT * 3 + i);
+  }
+  if (rush) for (let i = 0; i < 5; i++) {
+    const a = G.aT * 1.4 + i * TAU / 5, x = Math.cos(a) * 52, y = -12 + Math.sin(a) * 48;
+    c.fillStyle = "#ffe16b"; c.font = "bold 16px Arial"; c.fillText("✦", x, y);
+  }
+  const n = Math.min(4, save.rebirths);
+  for (let i = 0; i < n; i++) { c.strokeStyle = "#ffd700"; c.lineWidth = 4; c.beginPath(); c.ellipse(2, -70 - i * 11 + Math.sin(G.aT * 3 + i) * 3, 20, 6, 0, 0, TAU); c.stroke(); }
+}
+// rider: pose system (push, crouch, launch stretch, air tuck, landing squash)
+function rider(al, full) {
+  const f = fr(), jj = save.jOn && f.id === "josh", o = save.eq.outfit, c = ctx, g = P.grab;
+  const zaraiji = f.id === "zaraiji", sk = zaraiji ? "#70432d" : "#d9a273", sd = zaraiji ? "#3f2418" : "#b47c4e", skinHi = zaraiji ? "#956344" : "#e8b98a";
+  const st = jj ? "mx" : o === "outfit_italian_mafia" ? "mf" : o === "outfit_king_josh" ? "kg" : o === "outfit_diamond" ? "dm" : "t";
+  const pants = { mf: "#151515", kg: "#4a1a75", mx: "#ececec", dm: "#7ddcf2", t: "#2f4b7a" }[st], sl = { mf: "#151515", kg: "#7b2fb3", mx: "#0a6b3d", dm: "#e7fdff", t: f.shirt }[st];
+  const running = runnerActive(), dashing = G.dashTime > 0, crashout = save.ability === "crashout" && G.abilityTime > 0, runCycle = Math.sin(G.aT * 14);
+  const air = P.jump && !P.gr;
+  const idle = !running && !air && !P.gr ? Math.sin(G.aT * 2.4) : 0;
+  const cr = running ? 0 : air ? 0 : Math.min(1, P.sq + (P.gr ? .32 : .08 + .06 * Math.sin(G.aT * 2.4)));
+  const tk = running ? 0 : air ? (P.flipT > 0 ? 1 : P.vy * G.gravityDir < 0 ? .38 : .72) : 0, hy = 5 + cr * 10 - P.ext * 3 + idle * 1.4;
+  const push = running ? runCycle : air || P.gr ? 0 : Math.max(0, Math.sin(P.ph));
+  const lean = air ? clamp(P.vy * G.gravityDir * .006, -.12, .1) : idle * .025 + Math.sin(P.ph) * .035;
+  c.save(); c.globalAlpha = al; c.translate(P.x + 40 + (crashout ? Math.sin(G.aT * 38) * 2.5 : 0), P.y + 26 + idle * 1.5 + (air ? Math.sin(G.aT * 7) * 1.2 : 0)); c.rotate(P.rot * Math.PI / 180 + (crashout ? Math.sin(G.aT * 32) * .06 : dashing ? -.18 : running ? -.06 : lean));
+  if (f.id === "jasper") c.scale(1.22, 1);
+  if (P.flipT > 0) { c.save(); c.globalAlpha = Math.min(.8, P.flipT / 22); c.strokeStyle = P.flipT > 20 ? "#ffd34d" : "#e056fd"; c.lineWidth = 4; c.beginPath(); c.ellipse(0, 8, 52 + Math.sin(P.flipT * .25) * 5, 68, P.flipT * .045, Math.PI * .1, Math.PI * 1.55); c.stroke(); c.restore(); }
+  if (full) aura(c, st);
+  const ang = P.bf > 0 ? (1 - P.bf) * TAU * P.bd : 0;
+  if (!running) {
+    c.save(); c.translate(0, 58 + Math.sin(G.aT * 5) * (P.gr ? 2 : .7));
+    c.rotate(-tk * .06 + (P.gr ? Math.sin(G.aT * 12) * .1 : air ? clamp(-P.vy * .006, -.12, .12) : Math.sin(G.aT * 2.4) * .025));
+    c.scale(1, Math.max(.12, Math.cos(ang))); drawBoard(c, save.eq.board); c.restore();
+  }
+  // Airborne poses stretch into the jump; the landing squash compresses the rider briefly.
+  c.save(); c.translate(0, hy); c.scale(1 + cr * .08, 1 - cr * .13); c.translate(0, -hy);
+  const leg = (hx, ax, ay, kf) => {
+    const kx = (hx + ax) / 2 + kf, ky = (hy + ay) / 2;
+    c.lineCap = c.lineJoin = "round"; c.strokeStyle = pants; c.lineWidth = 11;
+    c.beginPath(); c.moveTo(hx, hy); c.lineTo(kx, ky); c.lineWidth = 9; c.lineTo(ax, ay); c.stroke();
+    c.save(); c.translate(ax, ay + 8); shoe(c, jj ? "jordan1" : save.eq.shoes); c.restore();
+  };
+  if (running) {
+    leg(-4, -22 - runCycle * 15, 30 + Math.max(0, runCycle) * 12, 3);
+    leg(5, 22 + runCycle * 15, 36 + Math.max(0, -runCycle) * 12, 8);
+  } else {
+    leg(-4, -22 - push * 6, 38 - tk * 8 - push * 10, 3 + cr * 8);
+    leg(5, 22, 38 - tk * 10, 8 + cr * 12);
+  }
+  c.save(); c.translate(0, hy - 5); c.rotate(cr * .2 - P.ext * .1 + tk * .12 - g * .15 + (dashing ? -.3 : running ? -.2 : 0) + idle * .025);
+  const L = (a, b) => a + (b - a) * g, sw = running ? runCycle * 17 : air ? Math.sin(G.aT * 5) * 4 : Math.sin(P.ph) * 6 + idle * 3;
+  const arm = (sx, hx, hy2, ox) => {
+    const ex = (sx + hx) / 2 + ox, ey = (-18 + hy2) / 2 + 3;
+    c.lineCap = "round"; c.strokeStyle = sl; c.lineWidth = 9; c.beginPath(); c.moveTo(sx, -18); c.lineTo(ex, ey); c.stroke();
+    c.strokeStyle = st === "mf" ? sl : sk; c.lineWidth = 7; c.beginPath(); c.moveTo(ex, ey); c.lineTo(hx, hy2); c.stroke();
+    c.fillStyle = sk; c.beginPath(); c.arc(hx, hy2, 4.2, 0, TAU); c.fill();
+  };
+  const grabbingGun = crashout && G.abilityTime > 6.65;
+  if (crashout) {
+    arm(-4, grabbingGun ? -17 : -20, grabbingGun ? 34 : 5, grabbingGun ? 5 : -7);
+  } else if (dashing) {
+    const pump = Math.sin(G.aT * 22) * 3;
+    arm(-4, -43 - pump, -7 + pump, -12);
+  } else if (running) {
+    const wave = Math.sin(G.aT * 7) * 5;
+    arm(-4, -31 - wave, -66 + wave, -7);
+  } else arm(-4, L(air ? -30 - sw : -20 - sw, -8), L(air ? -20 + tk * 15 : 8 + idle * 3, 52), -7);
+  c.fillStyle = sd; c.fillRect(-2, -30, 9, 10);
+  torso(c, st, f.shirt, full ? f.name : "", f.font);
+  c.save(); c.translate(1, -7); chain(c, save.eq.jewelry); c.restore();
+  if (crashout) {
+    arm(6, grabbingGun ? 17 : 35, grabbingGun ? 30 : -12, grabbingGun ? -4 : 7);
+  } else if (dashing) {
+    const pump = Math.sin(G.aT * 22 + .7) * 3;
+    arm(6, -37 - pump, 1 - pump, -8);
+  } else if (running) {
+    const wave = Math.sin(G.aT * 7 + .6) * 5;
+    arm(6, 31 + wave, -66 - wave, 7);
+  } else arm(6, L(air ? 30 + sw : 26 + sw, 10), L(air ? -18 + tk * 14 : 4 + idle * 3, 52), 7);
+  // head
+  c.save(); c.translate(2, -44);
+  const hg = c.createLinearGradient(-14, 0, 14, 0); hg.addColorStop(0, sd); hg.addColorStop(.6, sk); hg.addColorStop(1, skinHi);
+  c.fillStyle = hg; c.beginPath(); c.ellipse(0, 0, 14, 15.5, 0, 0, TAU); c.fill();
+  c.fillStyle = sd; c.beginPath(); c.ellipse(-10, 2, 3, 4.5, 0, 0, TAU); c.fill();
+  if (G.img && !jj) {
+    c.save(); c.beginPath(); c.arc(0, 0, 16, 0, TAU); c.clip(); c.drawImage(G.img, -16, -16, 32, 32); c.restore();
+  } else {
+    if (!jj) {
+      c.fillStyle = f.hair; c.beginPath(); c.moveTo(-15, 3); c.bezierCurveTo(-18, -22, 15, -22, 15, -6);
+      c.quadraticCurveTo(7, -12, -3, -10); c.quadraticCurveTo(-9, -8, -10, 3); c.fill();
+    }
+    if (jj) {
+      c.fillStyle = "#0d0d0d"; c.beginPath(); c.ellipse(0, 0, 15.5, 17, 0, 0, TAU); c.fill();
+      c.fillStyle = sk; c.beginPath(); c.roundRect(2, -8, 13, 9, 4); c.roundRect(3, 8, 10, 5, 2); c.fill();
+    }
+    c.fillStyle = "#fff"; c.beginPath(); c.ellipse(8, -3, 3.3, 2.4, 0, 0, TAU); c.fill();
+    c.fillStyle = "#2a1a12"; c.beginPath(); c.arc(9, -3, 1.6, 0, TAU); c.fill();
+    if (!jj) {
+      c.strokeStyle = sd; c.lineWidth = 1.5; c.beginPath(); c.moveTo(13, -2); c.lineTo(16.5, 4); c.lineTo(12.5, 5); c.stroke();
+      c.strokeStyle = "#8a3b2c"; c.beginPath(); c.moveTo(6, 10); c.quadraticCurveTo(10, 12, 13, 9); c.stroke();
+    }
+  }
+  c.save(); c.translate(0, -8); hat(c, save.eq.hat); c.restore();
+  c.restore();   // head
+  if (crashout) {
+    c.save(); c.font = "27px Arial"; c.textAlign = "center"; c.fillText("💢", 3, -69 + Math.sin(G.aT * 15) * 3);
+    if (!grabbingGun) {
+      const tx = G.boss ? G.boss.x + G.boss.w / 2 : P.x + 500, ty = G.boss ? G.boss.y + G.boss.hy + G.boss.h * .48 : P.y + 8;
+      c.save(); c.translate(33, -12); c.rotate(Math.atan2(ty - (P.y + 7), tx - (P.x + 66)) - P.rot * Math.PI / 180);
+      c.shadowColor = "#ff4b35"; c.shadowBlur = 10; c.fillStyle = "#252630"; c.fillRect(0, -4, 26, 8); c.fillRect(15, -7, 13, 3); c.fillRect(4, 2, 7, 10);
+      c.fillStyle = "#b9c2d0"; c.fillRect(3, -3, 15, 2); c.restore();
+      if (G.crashoutTimer > 0 && G.crashoutTimer < .16) { c.fillStyle = "#ffd34d"; c.shadowColor = "#ff4b35"; c.shadowBlur = 12; c.beginPath(); c.arc(62, -14, 5 + Math.random() * 3, 0, TAU); c.fill(); }
+    }
+    c.restore();
+  }
+  c.restore();   // upper body
+  c.restore();   // landing squash
+  c.restore();   // whole rider
+}
+function tweetie() {
+  const c = ctx, fl = Math.sin(pet.t * 9) * .7;
+  c.save(); c.translate(pet.x, pet.y); c.scale(1.15, 1.15); c.rotate(clamp(P.vy * .02, -.3, .3));
+  c.fillStyle = "#a8a48f"; c.beginPath(); c.moveTo(-8, 2); c.lineTo(-32, 10 + fl * 3); c.lineTo(-30, 15 + fl * 3); c.lineTo(-6, 9); c.fill();
+  c.fillStyle = "#ffd83a"; c.beginPath(); c.ellipse(0, 4, 13, 9, -.15, 0, TAU); c.fill();
+  c.fillStyle = "#d8cf9a"; c.save(); c.translate(-3, 1); c.rotate(-.6 - fl); c.beginPath(); c.ellipse(-8, 0, 12, 5, 0, 0, TAU); c.fill(); c.restore();
+  c.fillStyle = "#ffe45c"; c.beginPath(); c.arc(11, -6, 8, 0, TAU); c.fill();
+  c.fillStyle = "#ffd21f"; c.beginPath(); c.moveTo(6, -11); c.quadraticCurveTo(0, -24, 9, -20); c.lineTo(11, -13); c.fill();
+  c.beginPath(); c.moveTo(9, -12); c.quadraticCurveTo(6, -26, 14, -20); c.lineTo(14, -12); c.fill();
+  c.fillStyle = "#ff7a2b"; c.beginPath(); c.arc(12, -3.5, 3, 0, TAU); c.fill();
+  c.fillStyle = "#111"; c.beginPath(); c.arc(13.5, -8, 1.8, 0, TAU); c.fill();
+  c.fillStyle = "#b9a99a"; c.beginPath(); c.moveTo(18, -7); c.lineTo(23, -4); c.lineTo(18, -3); c.fill();
+  c.font = "900 9px Arial"; c.textAlign = "center"; c.lineWidth = 3; c.strokeStyle = "#000";
+  c.strokeText("🐤 TWEETIE", 0, -28); c.fillStyle = "#ffe45c"; c.fillText("🐤 TWEETIE", 0, -28);
+  c.restore();
+}
+function bruno() {
+  const c = ctx, run = G.aT * 12, bounce = Math.abs(Math.sin(run)) * 4;
+  c.save(); c.translate(brunoPos.x, brunoPos.y - bounce);
+  // Stocky bulldog body with a short curled tail.
+  c.strokeStyle = "#8a4d2c"; c.lineWidth = 6; c.lineCap = "round";
+  c.beginPath(); c.moveTo(-29, -20); c.quadraticCurveTo(-40, -32, -36, -39); c.stroke();
+  c.fillStyle = "#a85f35"; c.beginPath(); c.ellipse(-2, -23, 31, 19, -.04, 0, TAU); c.fill();
+  c.fillStyle = "#d89459"; c.beginPath(); c.ellipse(3, -16, 20, 9, 0, 0, TAU); c.fill();
+  // Alternating running legs; the far pair is darker for depth.
+  for (const [i, x] of [-1, 1].entries()) {
+    const phase = run + i * Math.PI;
+    c.strokeStyle = i ? "#704026" : "#91502d"; c.lineWidth = 8;
+    for (const offset of [-14, 13]) {
+      const swing = Math.sin(phase + (offset > 0 ? Math.PI : 0)) * 7;
+      c.beginPath(); c.moveTo(x * 17 + offset * .35, -13); c.lineTo(x * 17 + offset * .35 + swing, -2); c.lineTo(x * 17 + offset * .35 + swing - 3, 4); c.stroke();
+    }
+  }
+  // Wide bulldog head, wrinkled muzzle, floppy ears and shiny nose.
+  c.fillStyle = "#b96d3d"; c.beginPath(); c.ellipse(20, -35, 23, 21, .12, 0, TAU); c.fill();
+  c.fillStyle = "#754027"; c.beginPath(); c.ellipse(6, -39, 8, 12, -.38 + Math.sin(run) * .08, 0, TAU); c.fill();
+  c.beginPath(); c.ellipse(37, -39, 8, 12, .38 - Math.sin(run) * .08, 0, TAU); c.fill();
+  c.fillStyle = "#e7a77d"; c.beginPath(); c.ellipse(20, -27, 17, 12, 0, 0, TAU); c.fill();
+  c.fillStyle = "#2a1712"; c.beginPath(); c.ellipse(23, -32, 7, 5, 0, 0, TAU); c.fill();
+  c.fillStyle = "#fff"; c.beginPath(); c.arc(12, -42, 4, 0, TAU); c.arc(29, -42, 4, 0, TAU); c.fill();
+  c.fillStyle = "#21140f"; c.beginPath(); c.arc(13, -42, 1.8, 0, TAU); c.arc(30, -42, 1.8, 0, TAU); c.fill();
+  c.strokeStyle = "#754027"; c.lineWidth = 2; c.beginPath(); c.moveTo(10, -30); c.quadraticCurveTo(21, -25, 33, -30); c.moveTo(15, -24); c.lineTo(28, -24); c.stroke();
+  c.fillStyle = "#e54862"; c.beginPath(); c.ellipse(24, -21, 4, 6 + Math.max(0, Math.sin(run)) * 2, 0, 0, TAU); c.fill();
+  // Blue collar and swinging gold tag.
+  c.strokeStyle = "#2478e5"; c.lineWidth = 5; c.beginPath(); c.moveTo(7, -18); c.quadraticCurveTo(18, -12, 28, -18); c.stroke();
+  c.fillStyle = "#ffd34d"; c.beginPath(); c.arc(19, -12 + Math.sin(run * 1.5) * 2, 4, 0, TAU); c.fill();
+  c.font = "900 11px Arial"; c.textAlign = "center"; c.lineWidth = 3; c.strokeStyle = "#160c0a"; c.strokeText("BRUNO", 2, -59); c.fillStyle = "#fff"; c.fillText("BRUNO", 2, -59);
+  c.restore();
+}
+
+/* ---------- 11. RENDER ---------- */
+const bgG = {}; let bgH = 0;
+function bgGrad(L) {
+  if (bgH !== H) { for (const k in bgG) delete bgG[k]; bgH = H; }
+  if (!bgG[G.level]) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, L.a); g.addColorStop(1, L.b); bgG[G.level] = g; }
+  return bgG[G.level];
+}
+function drawBoss(c) {
+  const b = G.boss, gy = ground(), cx = b.x + b.w / 2, top = b.y + b.hy;
+  const k = b.mode === "wind" ? clamp(b.wind / b.wmax, 0, 1) : 0;
+  if (b.mode === "wind") {      // bright lane line warns where the dash will pass
+    const v = BOSS_VARIANTS[G.bossIndex];
+    const target = Math.min(P.x - b.w - 30, b.x - Math.max(220, W * v.length));
+    const x1 = Math.max(0, Math.min(target, b.x + b.w)), x2 = Math.min(W, Math.max(target, b.x + b.w));
+    const lineY = gy + 100 - b.h * .22;
+    c.save(); c.shadowColor = "#ff244d"; c.shadowBlur = 18;
+    c.strokeStyle = `rgba(255,35,70,${.3 + .42 * Math.abs(Math.sin(b.wind * .35))})`;
+    c.lineWidth = 22; c.beginPath(); c.moveTo(x1, lineY); c.quadraticCurveTo((x1 + x2) / 2, lineY - v.arc * 2, x2, lineY); c.stroke();
+    c.strokeStyle = "#ff244d"; c.lineWidth = 5; c.beginPath(); c.moveTo(x1, lineY); c.quadraticCurveTo((x1 + x2) / 2, lineY - v.arc * 2, x2, lineY); c.stroke();
+    c.restore();
+  }
+  const air = clamp(-b.hy / 160, 0, 1);
+  c.fillStyle = `rgba(0,0,0,${.35 * (1 - .6 * air)})`;
+  c.beginPath(); c.ellipse(cx, gy + 104, b.w * .46 * (1 - .4 * air), 9, 0, 0, TAU); c.fill();
+  if (b.secret) {
+    drawNaeto(c, b);
+    if (b.mode === "windup" || b.mode === "clap") { c.font = "900 20px Arial"; c.fillStyle = "#ffe678"; c.fillText(`👏 CLAP ${b.mode === "clap" ? b.claps : Math.min(3, b.claps + 1)} / 3 — DODGE!`, cx, Math.max(25, gy - 350)); }
+    if (b.mode === "tired") { c.font = "900 20px Arial"; c.fillStyle = "#9dffda"; c.fillText("😮‍💨 STOMP THE DURAG!", cx, Math.max(25, gy - 100)); }
+  } else {
+    c.save();
+    let alpha = b.inv > 0 && ((b.inv / 4) | 0) % 2 ? .45 : 1, sc = 1, spin = 0;
+    if (b.mode === "dying") { const d = b.dying / 75; alpha = 1 - d * .8; sc = 1 - d * .55; spin = d * 6; }
+    c.globalAlpha = alpha;
+    c.translate(cx, top + b.h + (b.mode === "patrol" ? Math.sin(b.t * .09) * 4 : 0));
+    c.rotate(b.tilt + spin); c.scale(b.sx * sc, b.sy * sc);
+    if (k > 0) { c.shadowColor = "#ff3355"; c.shadowBlur = 25 * k; }
+    c.font = b.h + "px Arial"; c.textAlign = "center"; c.textBaseline = "middle";
+    c.fillText(b.e, 0, -b.h / 2);
+    c.restore();
+    if (k > 0) { c.font = "900 20px Arial"; c.textAlign = "center"; c.fillText("❗ " + BOSS_VARIANTS[G.bossIndex].style.toUpperCase(), cx, top - 24 - Math.abs(Math.sin(b.wind * .3)) * 10); }
+  }
+  const w = Math.min(420, W - 40), x = (W - w) / 2;
+  c.fillStyle = "rgba(0,0,0,.6)"; c.fillRect(x, H * .1, w, 16);
+  c.fillStyle = "#ff3355"; c.fillRect(x, H * .1, w * clamp(b.hpv / b.max, 0, 1), 16);
+  c.fillStyle = "#fff"; c.font = "900 14px Arial"; c.textAlign = "center";
+  c.fillText(b.n + "  " + Math.max(0, b.hp) + " / " + b.max + " HP", W / 2, H * .1 + 30);
+}
+function drawNaeto(c, b) {
+  const gy = ground(), base = gy + 100, cx = b.x + b.w / 2, tired = b.mode === "tired";
+  const headY = tired ? gy - 10 : Math.max(68, gy - 218);
+  const clap = b.mode === "clap" ? 1 : b.mode === "windup" ? clamp(b.timer / 54, 0, 1) : 0;
+  c.save(); c.globalAlpha = b.mode === "dying" ? Math.max(.12, 1 - b.dying / 90) : 1;
+  if (b.mode === "dying") c.rotate((b.dying / 75) * .35);
+  // Tall streetwear silhouette, with a grounded shadow and broad shoulders.
+  c.fillStyle = "#211316"; c.beginPath(); c.ellipse(cx, base + 2, 106, 13, 0, 0, TAU); c.fill();
+  c.lineCap = c.lineJoin = "round";
+  if (tired) {
+    c.strokeStyle = "#17151a"; c.lineWidth = 37; c.beginPath(); c.moveTo(cx - 36, gy - 8); c.lineTo(cx - 68, gy + 17); c.lineTo(cx - 42, gy + 50); c.moveTo(cx + 35, gy - 8); c.lineTo(cx + 69, gy + 16); c.lineTo(cx + 45, gy + 50); c.stroke();
+    c.fillStyle = "#551e36"; c.save(); c.translate(cx, gy - 52); c.rotate(-.28); c.beginPath(); c.roundRect(-64, -60, 128, 116, 25); c.fill(); c.restore();
+  } else {
+    c.fillStyle = "#17151a"; c.fillRect(cx - 48, gy - 117, 39, 119); c.fillRect(cx + 12, gy - 117, 39, 119);
+    c.fillStyle = "#30313a"; c.fillRect(cx - 51, gy - 8, 47, 14); c.fillRect(cx + 9, gy - 8, 47, 14);
+    c.fillStyle = "#551e36"; c.beginPath(); c.roundRect(cx - 76, gy - 237, 152, 142, 28); c.fill();
+  }
+  // Oversized clapping forearms; they swing together during the warning and clap.
+  const reach = 82 - clap * 64, handY = tired ? gy - 105 : gy - 157;
+  c.strokeStyle = "#60351f"; c.lineWidth = 27; c.beginPath();
+  c.moveTo(cx - 67, tired ? gy - 86 : gy - 213); c.lineTo(cx - reach, handY);
+  c.moveTo(cx + 67, tired ? gy - 86 : gy - 213); c.lineTo(cx + reach, handY); c.stroke();
+  c.strokeStyle = "#865236"; c.lineWidth = 19; c.beginPath();
+  c.moveTo(cx - 67, tired ? gy - 86 : gy - 213); c.lineTo(cx - reach, handY);
+  c.moveTo(cx + 67, tired ? gy - 86 : gy - 213); c.lineTo(cx + reach, handY); c.stroke();
+  c.fillStyle = "#75452c"; c.beginPath(); c.ellipse(cx - reach, handY, 20, 16, -.2, 0, TAU); c.ellipse(cx + reach, handY, 20, 16, .2, 0, TAU); c.fill();
+  if (b.mode === "clap") {
+    const pulse = 1 + Math.sin(b.timer * .55) * .25; c.save(); c.globalAlpha = .8; c.strokeStyle = "#ffd34d"; c.lineWidth = 7;
+    c.beginPath(); c.arc(cx, handY, 32 * pulse, 0, TAU); c.stroke(); c.restore();
+  }
+  // Dreads hang from beneath a black durag; face and hair use natural deep-brown tones.
+  c.strokeStyle = "#171312"; c.lineWidth = 10; c.lineCap = "round";
+  for (let i = -4; i <= 4; i++) {
+    const dx = cx + i * 13, side = Math.sign(i || 1), length = tired ? 40 : 69 + (Math.abs(i) % 3) * 8;
+    c.beginPath(); c.moveTo(cx + i * 9, headY - 8); c.bezierCurveTo(dx - side * 8, headY + 28, dx + side * 9, headY + length * .65, dx, headY + length); c.stroke();
+  }
+  c.fillStyle = "#74452d"; c.beginPath(); c.ellipse(cx, headY, 47, 43, 0, 0, TAU); c.fill();
+  c.fillStyle = "#171416"; c.beginPath(); c.moveTo(cx - 48, headY - 11); c.quadraticCurveTo(cx - 43, headY - 56, cx + 9, headY - 51); c.quadraticCurveTo(cx + 46, headY - 48, cx + 48, headY - 11); c.lineTo(cx - 48, headY - 11); c.fill();
+  c.fillStyle = "#09090c"; c.beginPath(); c.moveTo(cx + 35, headY - 42); c.quadraticCurveTo(cx + 82, headY - 32, cx + 84, headY - 12); c.lineTo(cx + 68, headY - 7); c.quadraticCurveTo(cx + 58, headY - 29, cx + 28, headY - 31); c.fill();
+  c.fillStyle = "#8b5737"; c.fillRect(cx + 8, headY - 9, 39, 5); // band across the durag
+  c.fillStyle = "#f4e7d6"; c.beginPath(); c.ellipse(cx - 19, headY + 4, 5, 3, 0, 0, TAU); c.fill(); c.fillStyle = "#171312"; c.beginPath(); c.arc(cx - 20, headY + 4, 1.8, 0, TAU); c.fill();
+  c.strokeStyle = "#402319"; c.lineWidth = 3; c.beginPath(); c.moveTo(cx - 30, headY + 20); c.quadraticCurveTo(cx - 20, headY + 27, cx - 8, headY + 21); c.stroke();
+  c.font = "900 17px Arial"; c.textAlign = "center"; c.lineWidth = 4; c.strokeStyle = "#170b0b"; c.fillStyle = "#fff"; c.strokeText("NAETO", cx, Math.max(25, gy - 328)); c.fillText("NAETO", cx, Math.max(25, gy - 328));
+  c.restore();
+}
+function draw() {
+  const c = ctx;
+  c.save(); c.textBaseline = "middle"; c.textAlign = "center";
+  if (G.shake > 0) { c.translate((Math.random() - .5) * G.shake, (Math.random() - .5) * G.shake); G.shake *= .88; if (G.shake < .5) G.shake = 0; }
+  const L = LV[G.level - 1], gy = ground();
+  c.fillStyle = bgGrad(L); c.fillRect(0, 0, W, H);
+  if (L.h) {
+    c.fillStyle = "rgba(255,255,255,.7)";
+    for (let i = -1; i < W / 180 + 2; i++) { const x = i * 180 + (G.bgX % 180); c.beginPath(); c.arc(x, gy + 130, 90, 0, TAU); c.arc(x + 60, gy + 110, 70, 0, TAU); c.fill(); }
+  } else if (L.hell) {
+    const pulse = Math.sin(G.aT * 2) * 8;
+    c.fillStyle = "rgba(255,94,26,.18)"; c.beginPath(); c.arc(W * .78, gy * .24, 76 + pulse, 0, TAU); c.fill();
+    c.fillStyle = "#ff5a24"; c.beginPath(); c.arc(W * .78, gy * .24, 43 + pulse * .25, 0, TAU); c.fill();
+    c.fillStyle = "#ffd28a"; c.beginPath(); c.arc(W * .78, gy * .24, 24, 0, TAU); c.fill();
+    c.fillStyle = "rgba(42,3,10,.82)";
+    for (let i = -1; i < W / 130 + 2; i++) {
+      const x = i * 130 + ((G.bgX * .25) % 130), h = 70 + (((i + 40) * 53) % 150);
+      c.beginPath(); c.moveTo(x - 45, gy + 95); c.lineTo(x + 20, gy - h); c.lineTo(x + 68, gy + 95); c.fill();
+    }
+    for (let i = 0; i < 34; i++) {
+      let x = (i * 173 + G.bgX * (.35 + (i % 4) * .08)) % W; if (x < 0) x += W;
+      const y = (i * 79 + G.aT * (12 + i % 7)) % Math.max(120, gy + 80);
+      c.fillStyle = i % 3 ? "#ff7a24" : "#ffd16b"; c.globalAlpha = .45 + .45 * Math.abs(Math.sin(G.aT + i));
+      c.beginPath(); c.arc(x, y, 2 + i % 3, 0, TAU); c.fill();
+    }
+    c.globalAlpha = 1;
+  } else {
+    c.fillStyle = "#f3d6ff"; c.beginPath(); c.arc(W * .82, 120, 60, 0, TAU); c.fill();
+    c.fillStyle = "rgba(255,255,255,.8)";
+    for (let i = 0; i < 45; i++) { let x = (i * 173 + G.bgX * .25) % W; if (x < 0) x += W; c.fillRect(x, (i * 71) % Math.max(200, H * .55), 3, 3); }
+    c.fillStyle = "rgba(60,30,100,.4)";
+    for (let i = -1; i < W / 110 + 2; i++) { const h = 90 + (((i % 5) + 5) * 37 % 110); c.fillRect(i * 110 + ((G.bgX * .5) % 110), gy - h + 30, 80, h + 70); }
+    c.fillStyle = "rgba(5,3,15,.65)";
+    for (let i = -1; i < W / 160 + 2; i++) { const h = 140 + (((i % 7) + 7) * 53 % 180); c.fillRect(i * 160 + (G.bgX % 160), gy - h, 130, h + 100); }
+  }
+  c.fillStyle = L.h ? "#fff" : L.hell ? "#26060a" : "#16101e"; c.fillRect(0, gy + 100, W, H - gy - 100);
+  c.fillStyle = L.h ? "#ffd34d" : L.hell ? "#ff351c" : "#9b59b6"; c.fillRect(0, gy + 100, W, 8);
+  if (L.hell) {
+    c.fillStyle = "rgba(255,86,24,.7)";
+    for (let i = -1; i < W / 150 + 2; i++) { const x = i * 150 + (G.bgX % 150); c.fillRect(x, gy + 112, 72, 3); c.fillRect(x + 36, gy + 112, 3, 34); }
+    c.fillStyle = "rgba(255,36,15,.18)"; c.fillRect(0, gy + 100, W, 20 + Math.sin(G.aT * 3) * 4);
+  }
+  G.bul.forEach(b => {
+    c.save(); c.globalAlpha = b.st ? .4 : 1;
+    c.fillStyle = "#ff3366"; c.beginPath(); c.arc(b.x, b.y - 25, 18, 0, TAU); c.fill();
+    c.fillStyle = "#333"; c.fillRect(b.x - 14, b.y - 7, 28, b.st ? 12 : 40);
+    if (!b.st) { c.fillStyle = L.h ? "#333" : "#fff"; c.font = "bold 13px Arial"; c.textAlign = "center"; c.fillText("😂 " + b.q, b.x, b.y - 55 + Math.sin(b.t * 3) * 4); }
+    c.restore();
+  });
+  G.wads.forEach(p => { c.fillStyle = "#fff"; c.beginPath(); c.arc(p.x, p.y, 5, 0, TAU); c.fill(); });
+  G.cash.forEach((l, i) => {
+    c.save(); c.translate(l.x, l.y); c.rotate(Math.sin(G.aT * 2 + i) * .08);
+    c.shadowColor = "rgba(0,0,0,.5)"; c.shadowBlur = 8; c.fillStyle = "#52bd73"; c.strokeStyle = "#d9ffd5"; c.lineWidth = 2;
+    c.beginPath(); c.roundRect(-20, -13, 40, 26, 4); c.fill(); c.stroke();
+    c.shadowBlur = 0; c.fillStyle = "#eaffdf"; c.font = "900 20px Arial"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("$", 0, 1);
+    c.strokeStyle = "rgba(234,255,223,.65)"; c.lineWidth = 1; c.beginPath(); c.arc(-14, 0, 4, 0, TAU); c.arc(14, 0, 4, 0, TAU); c.stroke(); c.restore();
+  });
+  c.textAlign = "center"; c.font = "34px Arial"; G.tac.forEach(q => c.fillText("🌮", q.x + 20, q.y + 20));
+  G.pw.forEach(p => {
+    c.fillStyle = "rgba(255,255,255,.28)"; c.beginPath(); c.arc(p.x, p.y, 24, 0, TAU); c.fill();
+    c.font = "26px Arial"; c.fillText({ shield: "🛡️", mag: "🧲", slow: "⏳", life: "❤️" }[p.t], p.x, p.y);
+  });
+  G.obs.forEach(o => {
+    if (o.type === "rail") {
+      c.fillStyle = "#d9d9e6"; c.fillRect(o.x, o.y, o.w, o.h);
+      c.fillStyle = "#777"; c.fillRect(o.x, o.y + o.h, 10, 28); c.fillRect(o.x + o.w - 10, o.y + o.h, 10, 28);
+    } else if (o.type === "ramp") {
+      c.fillStyle = "#00d9ff"; c.beginPath(); c.moveTo(o.x, o.y + o.h); c.lineTo(o.x + o.w, o.y); c.lineTo(o.x + o.w, o.y + o.h); c.fill();
+      c.fillStyle = "#fff"; c.font = "bold 12px Arial"; c.fillText(G.level === 3 ? "MEGA!" : "JUMP!", o.x + o.w * .62, o.y + o.h * .7);
+    } else {
+      c.save();
+      if (o.type === "hellfire") { c.shadowColor = "#ff351c"; c.shadowBlur = 22 + Math.sin(G.aT * 10 + o.ph) * 8; c.globalAlpha = .8 + Math.sin(G.aT * 12 + o.ph) * .2; }
+      c.font = Math.max(o.h, o.w * .6) + "px Arial"; c.fillText(o.e || TY[o.type][3], o.x + o.w / 2, o.y + o.h / 2);
+      if (o.type === "hellfire") { c.font = "30px Arial"; c.fillText("🔥", o.x + o.w / 2 + Math.sin(G.aT * 15 + o.ph) * 5, o.y - 10); }
+      c.restore();
+    }
+    if (o.type !== "rail" && o.type !== "ramp" && o.type !== "shot" && o.x > P.x + 80 && o.x < P.x + 380) {
+      c.save(); c.font = "900 23px Arial"; c.textAlign = "center"; c.lineWidth = 4; c.strokeStyle = "#17101c"; c.fillStyle = "#ffe16b";
+      c.strokeText("!", o.x + o.w / 2, o.y - 18); c.fillText("!", o.x + o.w / 2, o.y - 18); c.restore();
+    }
+  });
+  if (G.boss) drawBoss(c);
+  G.shards.forEach(q => {
+    c.save(); c.translate(q.x, q.y); c.rotate(q.spin); c.shadowColor = "#ff3a25"; c.shadowBlur = 10;
+    c.fillStyle = "#ff6338"; c.beginPath(); c.moveTo(-q.r, 0); c.lineTo(-2, -q.r * .62); c.lineTo(q.r, -q.r * .25); c.lineTo(3, q.r); c.closePath(); c.fill();
+    c.fillStyle = "#ffd078"; c.beginPath(); c.moveTo(-3, -q.r * .2); c.lineTo(2, -q.r * .5); c.lineTo(3, q.r * .28); c.closePath(); c.fill(); c.restore();
+  });
+  G.crashBullets.forEach(q => {
+    c.save(); c.translate(q.x, q.y); c.rotate(q.a); c.shadowColor = "#ff573d"; c.shadowBlur = 12;
+    c.fillStyle = "#ffd34d"; c.fillRect(-13, -2, 24, 4); c.fillStyle = "#fff4bd"; c.fillRect(5, -1, 8, 2); c.restore();
+  });
+  G.pts.forEach(p => { c.globalAlpha = Math.max(0, p.l); c.fillStyle = p.c; c.beginPath(); c.arc(p.x, p.y, p.s, 0, TAU); c.fill(); });
+  c.globalAlpha = 1;
+  if (G.running && !save.fx && ((keys.KeyE && G.boost > 0) || G.taco > 0)) {
+    c.strokeStyle = "rgba(255,255,255,.3)"; c.lineWidth = 2; c.beginPath();
+    for (let i = 0; i < 16; i++) { const y = Math.random() * H, x = Math.random() * W, l = 80 + Math.random() * 140; c.moveTo(x, y); c.lineTo(x + l, y); }
+    c.stroke();
+  }
+  const hg = Math.max(0, gy - P.y);
+  c.fillStyle = `rgba(0,0,0,${.35 * (1 - Math.min(.7, hg / 320))})`;
+  c.beginPath(); c.ellipse(P.x + 40, gy + 104, 42 * (1 - Math.min(.6, hg / 400)), 7, 0, 0, TAU); c.fill();
+  if (save.jOn && fr().id === "josh") {
+    c.save(); c.strokeStyle = "#f00"; c.lineWidth = 6; c.shadowColor = "#f00"; c.shadowBlur = 15;
+    c.beginPath(); c.moveTo(P.x + 52, P.y - 21); c.lineTo(W, P.y - 21); c.stroke(); c.restore();
+    bruno();
+  }
+  if (save.sOn && fr().id === "sami") tweetie();
+  if (!(G.inv > 0 && Math.floor(G.inv / 5) % 2)) rider(1, true);
+  drawRajiArm(c);
+  if (G.shield > 0) { c.strokeStyle = "rgba(120,220,255,.85)"; c.lineWidth = 3; c.beginPath(); c.arc(P.x + 40, P.y + 26, 64, 0, TAU); c.stroke(); }
+  c.textAlign = "center"; c.font = "900 16px Arial";
+  G.pop.forEach(p => { c.globalAlpha = Math.max(0, p.l); c.lineWidth = 4; c.strokeStyle = "#000"; c.strokeText(p.t, p.x, p.y); c.fillStyle = "#fff"; c.fillText(p.t, p.x, p.y); });
+  c.globalAlpha = 1;
+  if (G.banner) {
+    const b = G.banner, k = b.t / 70, pp = k < .15 ? k / .15 : 1, sc = .6 + .6 * Math.min(1, pp) + (k < .15 ? 0 : -.1 * k), a = k > .7 ? 1 - (k - .7) / .3 : 1;
+    c.save(); c.globalAlpha = a; c.translate(W / 2, H * .28); c.scale(sc, sc);
+    c.font = "900 44px Impact,Arial"; c.lineWidth = 8; c.strokeStyle = "#000"; c.shadowColor = b.c; c.shadowBlur = 25;
+    c.strokeText(b.n, 0, 0); c.fillStyle = b.c; c.fillText(b.n, 0, 0);
+    const s = `+${b.p}   COMBO x${b.m}`; c.font = "900 24px Arial"; c.shadowBlur = 0; c.strokeText(s, 0, 40); c.fillStyle = "#fff"; c.fillText(s, 0, 40);
+    c.restore();
+  }
+  if (G.combo > 1) {
+    const w = Math.max(0, 1 - (performance.now() - G.lastTrick) / 2500) * 160;
+    c.fillStyle = "rgba(0,0,0,.5)"; c.fillRect(W / 2 - 80, H * .28 + 62, 160, 8); c.fillStyle = "#ffd34d"; c.fillRect(W / 2 - 80, H * .28 + 62, w, 8);
+  }
+  if (G.flash > 0) { c.fillStyle = `rgba(255,255,255,${G.flash * .55})`; c.fillRect(0, 0, W, H); }
+  c.restore();
+}
+
+/* ---------- 12. HUD & MENUS ---------- */
+const hc = {};
+function sh(k, v) { if (hc[k] !== v) { hc[k] = v; $(k).textContent = v; } }
+function updHUD() {
+  const f = fr(), D = DF[save.diff];
+  sh("hn", (G.level === 1 ? "Freshman " : "") + f.name); $("hn").style.color = f.font;
+  const freeRide = (G.level === HEAVEN_LEVEL || G.level === HELL_LEVEL) && !(G.boss && G.boss.secret);
+  sh("hh", freeRide ? "❤️∞" : "❤️".repeat(Math.max(0, G.lives)) + "🖤".repeat(Math.max(0, D.lives - G.lives)));
+  sh("hs", Math.floor(G.score).toLocaleString()); sh("hc", save.coins.toLocaleString()); sh("hm", G.combo);
+  sh("hr", save.rebirths + " · ✨x" + scoreMult().toFixed(1));
+  sh("hl", LV[G.level - 1].n);
+  sh("hp", (G.shield ? "🛡️ " : "") + (G.mag > 0 ? "🧲 " : "") + (G.slow > 0 ? "⏳" : ""));
+  const abilityState = save.ability === "boost" ? ` · ${Math.ceil(G.boost)}% charge` : save.ability === "gravity" ? ` · ${G.gravityDir < 0 ? "CEILING" : "FLOOR"}` : G.abilityTime > 0 ? ` · ${Math.ceil(G.abilityTime)}s active` : G.abilityCooldown > 0 ? ` · ${G.abilityCooldown.toFixed(1)}s cooldown` : " · READY";
+  const dashState = G.dashCooldown > 0 ? `${G.dashCooldown.toFixed(1)}s` : "READY";
+  const flightState = personalFlightActive() ? " · Q FLIGHT ON · hold SPACE/↑" : personalFlightOwner() ? " · Q to fly" : "";
+  sh("ha", `⚡ E: ${abilityDef(save.ability).name}${abilityState} · SHIFT DASH ${dashState}${flightState}`); syncAbilityButton();
+  sh("hd", G.boss ? "⚠️ " + G.boss.n + " · " + G.boss.hp + " HP" : G.level === HELL_LEVEL ? (save.naetoDefeated ? "🔥 HELL · Naeto defeated" : "🔥 HELL · Naeto in " + fmtClock(NAETO_TRAVEL_SECONDS - G.secretBossTime)) : G.level === HEAVEN_LEVEL ? "☁️ HEAVEN · rebirth for next boss" : G.tut ? "📖 TUTORIAL" : "🛹 " + fmtClock(G.nextBoss - G.bossTime) + " to " + BS[G.bossIndex][0]);
+  $("bb").style.width = G.boost + "%"; $("bb").parentElement.classList.toggle("hidden", save.ability !== "boost"); $("fb").style.width = G.fuel + "%";
+  $("fw").classList.toggle("hidden", G.level !== HEAVEN_LEVEL);
+  $("hellHubBtn").classList.toggle("hidden", !save.completedGame);
+}
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(3, (now - last) / 16.667); last = now;
+  if (G.running && !isPaused()) { update(dt); updHUD(); }
+  draw();
+}
+function M(html, kind = "panel", keepScroll = false) {
+  const pn = $("pn"), s = pn.scrollTop;
+  pn.innerHTML = html; $("md").classList.remove("hidden");
+  G.modal = true; G.mk = kind; $("menu").classList.add("hidden");
+  pn.scrollTop = keepScroll ? s : 0;
+}
+function X() { $("md").classList.add("hidden"); G.modal = false; G.userPaused = false; G.mk = ""; saveGame(); }
+function back() { X(); if (!G.running) { G.home === "over" && G.overInfo ? overScreen() : startScreen(); } }
+function pause() {
+  if (!G.running || (G.modal && !G.userPaused)) return;
+  if (G.userPaused) X();
+  else { G.userPaused = true; M('<h2>⏸ PAUSED</h2><button data-a="pause">▶ Resume</button>', "pause"); }
+}
+function fs() { document.fullscreenElement ? document.exitFullscreen && document.exitFullscreen() : document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+
+function startScreen(msg) {
+  G.home = "start"; refreshDaily();
+  const ch = CHL[dqi()];
+  M(`<h1>Josh's Skate Odyssey 2.0</h1>
+<p style="color:#7fffd4">${msg || ""}</p>
+<p>Difficulty:</p><div>${Object.keys(DF).map(k => `<button class="${save.diff === k ? "on" : ""}" data-a="setD" data-v="${k}">${DF[k].label}</button>`).join(" ")}</div>
+<p class="ctl"><b>SPACE/↑</b> Ollie · tap for a short hop, hold for more height · <b>↓ or S</b> fast fall · <b>E</b> ability · <b>SHIFT</b> invincible dash · <b>Q</b> Josh/Sami flight · <b>Z/X/C/V</b> tricks · <b>P</b> pause</p>
+<p class="ctl">Mobile: OLLIE = jump · DOWN = fast fall · E ability button · SHIFT DASH button · yellow ! marks nearby hazards</p>
+<p class="ctl"><b>Goal:</b> ride the level, land tricks for points and coins, then bounce on your boss from above. Beating a boss sends you to Heaven; beating the final boss sends you to Hell. Rebirth unlocks the next rival.</p><p class="ctl">Next up: <b>${BS[nextBossIndex()][0]}</b> · arrives after 1:00 of active movement · 500 HP · fast-fall stomps deal 2× damage.</p><p class="ctl">Different tricks in one jump build a chain. Clean landings keep your combo going.</p>
+<p class="ctl">🎯 Daily: ${ch[0]}</p><br>
+<button class="big" data-a="play">🚀 ${save.seen ? "START" : "START (with tutorial)"}</button>${save.cp.level > 1 ? ` <button data-a="cont">⏩ Continue Lv ${save.cp.level}</button>` : ""}
+<br><br><button data-a="tutorial">📖 Tutorial</button> <button data-a="guide">🧭 How to Play</button> <button data-a="settings">⚙ Settings</button> <button class="danger" data-a="resetAsk">🗑 Full Reset</button>
+<p class="ctl">Press <b>Enter</b> to start</p>`, "start");
+}
+function guide() {
+  M(`<h2>🧭 How to Play</h2><p><b>Ride:</b> SPACE/↑ or OLLIE to jump. Hold briefly for more height. ↓, S, or the DOWN button makes you fast-fall. Press E to use your equipped ability; SHIFT triggers your always-available invincible dash (2-second cooldown). Your starter Speed Boost works on the ground and in the air without lifting you. Press SPACE/↑ again in the air to backflip and double-jump.${save.cS || save.cJ ? " Press Q to toggle flight for your selected cheat skater; flight works alongside your SHIFT dash and E ability." : " Josh and Sami can fly with Q after their cheat codes are unlocked; flight works alongside your SHIFT dash and E ability."}</p><p><b>Abilities:</b> you start with Speed Boost. Unlock Run &amp; Smash (10,000 coins), Gravity Switch (20,000), Gold Rush (15,000), Raji's Left Arm (25,000), or Patrick's Crashout (35,000) in the shop, then equip one. Raji's Left Arm grows for a moment, then punches a wide area for 100 boss damage; 2-second duration and 3-second cooldown. Crashout lasts seven seconds and fires five shots in a spread; each hit does 50 boss damage, with a 10-second cooldown. Run &amp; Smash lasts 10 seconds with a 10-second cooldown; Gravity Switch has no cooldown; Gold Rush gives 3× coins and 2× score for 8 seconds.</p><p><b>Score:</b> do tricks in the air, mix different tricks for a chain, and land safely for a clean-landing bonus. Cash pickups give coins and fill boost.</p><p><b>Bosses:</b> ${BS[nextBossIndex()][0]} has 500 HP and arrives after one minute of active movement. Ten bosses guard the course; their red dash paths curve farther and get faster at each stage. Fallen Angel is the final boss. Jump on top while it dashes to hit it. Stomps deal 30 damage; hold ↓ or S as you stomp to deal 60. At rebirth 0 you get 1 midair jump; rebirth 1 gives 2, rebirth 3 gives 3, and rebirth 5 gives unlimited jumps.</p><p><b>Progress:</b> defeating a boss sends you to Heaven; defeating the final boss sends you to Hell. Heaven is free flight. Hell is free ride until Naeto appears after 10 seconds; then your normal lives return: Naeto has 2,500 HP, claps three times to launch dodgeable shrapnel, then kneels so you can stomp his durag for damage. Rebirth keeps your shop gear and gives a permanent multiplier, while reducing coins.</p><p>Daily challenges and achievements are optional rewards. Shop items and character perks can make later runs easier.</p><br><button data-a="back">Close</button>`);
+}
+function setDiff(k) { if (!DF[k]) return; save.diff = k; saveGame(); startScreen(); }
+function shop(msg) {
+  M(`<h2>🛒 Shop</h2><p>💰 <b class="price">${save.coins.toLocaleString()}</b></p><p style="color:#f66">${msg || ""}</p><div class="grid">` +
+    CAT.filter(x => x.id !== "hat_durag" || owned(x.id)).map(x => {
+      const ow = owned(x.id), e = save.eq[x.slot] === x.id;
+      return `<div class="card${e ? " on" : ""}"><h3>${IC[x.slot]} ${x.name}</h3><div>${x.desc}</div><div class="price">${x.cost ? x.cost.toLocaleString() + " 💰" : "FREE"}</div><button data-a="eq" data-v="${x.id}">${e ? "✓ EQUIPPED" : ow ? "EQUIP" : "BUY"}</button></div>`;
+    }).join("") + `</div><h2 style="margin-top:22px">⚡ Abilities · Equip one</h2><div class="grid">` +
+    ABILITIES.map(a => {
+      const ow = save.abilities.includes(a.id), e = save.ability === a.id;
+      return `<div class="card${e ? " on" : ""}${ow ? "" : " lk"}"><h3>${a.name}</h3><p>${a.desc}</p><div class="price">${a.cost ? a.cost.toLocaleString() + " 💰" : "FREE"}</div><button data-a="ability" data-v="${a.id}">${e ? "✓ ACTIVE" : ow ? "EQUIP" : "UNLOCK"}</button></div>`;
+    }).join("") + `</div><br><button data-a="back">Back</button>`, "panel", true);
+}
+function equip(id) {
+  const x = item(id); if (!x) return;
+  if (!owned(id)) { if (save.coins < x.cost) return shop("Not enough coins! 💰"); save.coins -= x.cost; save.owned.push(id); }
+  if (save.eq[x.slot] === id && x.slot === "outfit") save.eq.outfit = "none"; else save.eq[x.slot] = id;
+  saveGame(); shop(); updHUD();
+}
+function selectAbility(id) {
+  const a = ABILITIES.find(x => x.id === id); if (!a) return;
+  if (!save.abilities.includes(id)) {
+    if (save.coins < a.cost) return shop("Not enough coins to unlock that ability.");
+    save.coins -= a.cost; save.abilities.push(id);
+  }
+  save.ability = id; G.abilityTime = 0; G.abilityCooldown = 0; G.gravityDir = 1;
+  saveGame(); shop(); updHUD();
+}
+function syncAbilityButton() {
+  const b = $("bg"), names = { boost: "BOOST", runner: "RUN", gravity: "GRAVITY", goldrush: "GOLD RUSH", crashout: "CRASHOUT", leftarm: "LEFT ARM" };
+  if (!b) return;
+  b.textContent = "E " + (names[save.ability] || "BOOST");
+  b.setAttribute("aria-label", "Use " + abilityDef(save.ability).name);
+}
+function abilityActive() { return G.dashTime > 0 || (G.abilityTime > 0 && save.ability === "runner"); }
+function runnerActive() { return save.ability === "runner" && G.abilityTime > 0; }
+function personalFlightOwner() {
+  return fr().id === "sami" && save.cS ? "sami" : fr().id === "josh" && save.cJ ? "josh" : "";
+}
+function personalFlightActive() { return !!(G.flightActive && personalFlightOwner()); }
+function togglePersonalFlight() {
+  if (!G.running || G.modal || isPaused()) return;
+  const owner = personalFlightOwner();
+  if (!owner) { toast("Unlock Josh or Sami's cheat and select that skater to fly."); return; }
+  G.flightActive = !G.flightActive;
+  if (G.flightActive) {
+    P.vy = -8 * G.gravityDir; P.jump = true; P.gr = false; P.cut = true; P.airJumpsUsed = 0;
+    toast(owner === "sami" ? "🐦 BLUE JAYS — TAKE FLIGHT!" : "🪽 PURPLE WINGS — TAKE FLIGHT!"); SFX.trick();
+  } else toast("WINGS FOLDED · Flight off");
+  updHUD();
+}
+function useAbility() {
+  if (save.ability === "boost") return; // hold E to spend the starter speed boost
+  if (save.ability === "gravity") {
+    G.gravityDir *= -1; G.flash = Math.max(G.flash, .25); SFX.trick();
+    toast(G.gravityDir < 0 ? "🌀 GRAVITY REVERSED!" : "⬇️ NORMAL GRAVITY", W / 2, H * .32); return;
+  }
+  if (G.abilityCooldown > 0 || G.abilityTime > 0) return;
+  if (save.ability === "runner") { G.abilityTime = 10; G.abilityCooldown = 10; G.runnerHitCooldown = 0; toast("🏃 OFF THE BOARD! HANDS UP & RUN!"); }
+  else if (save.ability === "goldrush") { G.abilityTime = 8; G.abilityCooldown = 25; toast("💰 GOLD RUSH! 3× CASH · 2× SCORE"); SFX.taco(); }
+  else if (save.ability === "crashout") { G.abilityTime = 7; G.abilityCooldown = 10; G.crashoutShots = 0; G.crashoutTimer = .24; toast("😡 PATRICK'S CRASHOUT!"); shakeIt(3); SFX.crashout(); }
+  else if (save.ability === "leftarm") { G.abilityTime = 2; G.abilityCooldown = 3; G.leftArmHit = false; toast("💪 RAJI'S LEFT ARM — GROWING!"); shakeIt(2); SFX.trick(); }
+}
+function useDash() {
+  if (!G.running || isPaused() || G.dashCooldown > 0 || G.dashTime > 0) return;
+  G.dashTime = .55; G.dashCooldown = 2; shakeIt(4); SFX.trick();
+}
+function roster() {
+  M(`<h2>👥 The Mafia</h2><div class="grid">` + RO.map(f => {
+    const u = unlocked(f), a = fr().id === f.id;
+    return `<div class="card${a ? " on" : ""}${u ? "" : " lk"}"><h3 style="color:${f.font}">${f.name}</h3><p style="font-size:13px">${f.perk}</p><button ${u ? "" : "disabled"} data-a="sel" data-v="${f.id}">${u ? (a ? "✓ SELECTED" : "SELECT") : "🔒 REBIRTH " + f.req}</button></div>`;
+  }).join("") + `</div><br><button data-a="back">Back</button>`, "panel", true);
+}
+function selectSkater(id) {
+  const f = RO.find(x => x.id === id); if (!f || !unlocked(f)) return;
+  save.sel = id; G.flightActive = false; saveGame(); roster(); updHUD();
+}
+function scores(d) {
+  d = DF[d] ? d : save.diff;
+  M(`<h2>🏆 High Scores</h2><div>${Object.keys(DF).map(k => `<button class="${k === d ? "on" : ""}" data-a="scores" data-v="${k}">${DF[k].label}</button>`).join(" ")}</div><table><tr><th>#</th><th>Skater</th><th>Best</th></tr>` +
+    RO.map(f => ({ n: f.name, c: f.font, s: save.hs[f.id + ":" + d] || 0 })).sort((a, b) => b.s - a.s)
+      .map((r, i) => `<tr><td>#${i + 1}</td><td style="color:${r.c};font-weight:bold">${r.n}</td><td>${r.s.toLocaleString()} pts</td></tr>`).join("") +
+    `</table><br><button data-a="back">Close</button>`);
+}
+function goals() {
+  const ch = CHL[dqi()];
+  M(`<h2>🎯 Daily Challenge</h2><p>${ch[0]} — ${save.daily.done ? "✅ Done! (+3000💰)" : Math.min(save.daily.p, ch[2]) + "/" + ch[2]}</p><h2>🏅 Achievements</h2>` +
+    Object.keys(A).map(k => `<p style="opacity:${save.ach[k] ? 1 : .4}">${save.ach[k] ? "✅" : "🔒"} ${A[k]}</p>`).join("") + `<br><button data-a="back">Close</button>`);
+}
+function settings() {
+  M(`<h2>⚙ Settings</h2>
+<div class="row"><label>🎵 Music <input type="range" min="0" max="1" step=".05" value="${save.vm}" data-in="vm" aria-label="Music volume"></label></div>
+<div class="row"><label>🔊 Effects <input type="range" min="0" max="1" step=".05" value="${save.vs}" data-in="vs" aria-label="Effects volume"></label></div>
+<div class="row"><button class="${save.muted ? "" : "on"}" data-a="muteS">Sound: ${save.muted ? "OFF" : "ON"}</button>
+<button class="${save.fx ? "on" : ""}" data-a="fx">Reduce effects (flash &amp; shake): ${save.fx ? "ON" : "OFF"}</button></div>
+<div class="row">${save.photo ? '<button data-a="photoOff">Remove face photo</button> ' : ""}${G.running ? "" : '<button data-a="tutorial">📖 Replay tutorial</button> '}</div>
+<div class="row"><button class="danger" data-a="resetAsk">🗑 Full Reset</button></div>
+<br><button data-a="back">Close</button>`);
+}
+function setMuted(v) { save.muted = v ? 1 : 0; syncMute(); saveGame(); if (!save.muted) initAudio(); }
+function syncMute() { $("mu").textContent = save.muted ? "🔇" : "🔊"; }
+function toggleFx() { save.fx = save.fx ? 0 : 1; saveGame(); settings(); }
+function setPhoto(url) {
+  if (!url) { G.img = null; return; }
+  const i = new Image(); i.onload = () => { G.img = i; }; i.src = url;
+}
+function removePhoto() { save.photo = ""; G.img = null; saveGame(); settings(); }
+function cheatUI(m) {
+  M(`<h2>🔓 Secret Password</h2><p>${m || ""}</p><input type="password" id="pw" placeholder="Password" autocomplete="off" autocapitalize="off"><br><button data-a="cheat">ACTIVATE</button> ` +
+    (save.cS ? `<button class="${save.sOn ? "on" : ""}" data-a="tg" data-v="sOn">🐦 Blue jay aura: ${save.sOn ? "ON" : "OFF"} · Q toggles flight</button> ` : "") +
+    (save.cJ ? `<button class="${save.jOn ? "on" : ""}" data-a="tg" data-v="jOn">🟣 Josh aura + Bruno the bulldog: ${save.jOn ? "ON" : "OFF"} · Q toggles flight</button> ` : "") +
+    ((save.cJ || save.cS) ? `<hr><h3>Cheat options</h3><button data-a="cheatMoney">💰 Add 1,000,000 coins</button> <button data-a="cheatBoss">⚠️ Skip to boss</button> <button data-a="cheatHeaven">${G.boss && G.bossIndex === BS.length - 1 ? "🔥 Skip final boss → Hell" : "☁️ Skip boss → Heaven"}</button>` : "") +
+    `<button data-a="back">Close</button>`);
+}
+function toggleCheat(k) { if (k !== "sOn" && k !== "jOn") return; save[k] = save[k] ? 0 : 1; if (k === "jOn" && save.jOn) { brunoPos.x = P.x - 94; brunoPos.y = ground() + 96; } saveGame(); cheatUI(); }
+function cheat() {
+  const k = CHEAT_HASH[hash(($("pw") ? $("pw").value : "").trim())];
+  if (k === "J") { save.cJ = 1; save.jOn = 1; save.sel = "josh"; G.flightActive = false; brunoPos.x = P.x - 94; brunoPos.y = ground() + 96; cheatUI("✅ JOSH MODE: purple aura + Bruno the bulldog + Q flight unlocked! Josh selected."); }
+  else if (k === "S") { save.cS = 1; save.sOn = 1; save.sel = "sami"; G.flightActive = false; pet.x = P.x - 25; pet.y = P.y - 55; cheatUI("✅ SAMI MODE: Blue jay aura + Q flight unlocked! Sami selected."); }
+  else return cheatUI("❌ WRONG PASSWORD");
+  saveGame(); updHUD();
+}
+function cheatMoney() {
+  if (!save.cJ && !save.cS) return;
+  save.coins += 1000000;
+  saveGame(); updHUD(); cheatUI("💰 One million coins added!");
+}
+function cheatSkipBoss() {
+  if (!save.cJ && !save.cS) return;
+  const wasInHell = G.level === HELL_LEVEL;
+  X();
+  if (!G.running) { G.running = true; save.seen = 1; resetGame(false); }
+  if (wasInHell) {
+    G.level = HELL_LEVEL; G.boss = null; G.secretBossTime = 0; save.naetoDefeated = 0;
+    G.lives = DF[save.diff].lives; hideTut(); startNaeto(); saveGame(); updHUD(); return;
+  }
+  if (G.level >= HEAVEN_LEVEL) { rebirth(); }
+  G.tut = null; G.bossTime = G.nextBoss; hideTut(); startBoss(); updHUD();
+}
+function hellHub() {
+  if (!save.completedGame && G.level !== HELL_LEVEL) return;
+  const stages = LV.slice(0, NORMAL_LEVELS);
+  M(`<h1>🔥 AFTERLIFE HUB</h1><p>You beat the game! Revisit all nine courses, run their boss routes, fight Fallen Angel again, visit Heaven, or return to Hell for Naeto's secret challenge. Defeating Naeto unlocks his Durag in the shop.</p><div class="grid">` +
+    stages.map((l, i) => `<div class="card"><h3>${l.n}</h3><p>Rival: ${BS[i][0]} ${BS[i][1]}</p><button data-a="hellRun" data-v="${i + 1}">🛹 Play level normally</button><button data-a="hellBoss" data-v="${i + 1}">⚠️ Go straight to boss</button></div>`).join("") +
+    `<div class="card"><h3>🌋 Final Challenge</h3><p>${BS[BS.length - 1][0]} ${BS[BS.length - 1][1]} · Infernal Foundry arena</p><button data-a="hellFinal">👿 Fight final boss now</button></div>` +
+    `<div class="card"><h3>☁️ Heaven</h3><p>Return to the sky course for a free-flight ride.</p><button data-a="hellSky">🪽 Visit Heaven</button></div>` +
+    `</div><br><button class="big" data-a="hellReturn">🔥 Return to Hell Free Ride</button>`, "hellHub");
+}
+function returnToHell() {
+  X(); G.running = true; save.completedGame = 1; save.naetoDefeated = 0;
+  save.cp = { level: HELL_LEVEL, score: G.score }; resetGame(true);
+  saveGame(); updHUD(); toast("🔥 BACK TO HELL FREE RIDE!");
+}
+function replayFromHell(stage, bossIndex = null) {
+  stage = clamp(+stage | 0, 1, HEAVEN_LEVEL);
+  X(); G.running = true; G.userPaused = false;
+  save.cp = { level: stage, score: G.score };
+  resetGame(true);
+  G.bossIndex = bossIndex == null ? Math.min(stage - 1, BS.length - 1) : bossIndex;
+  G.nextBoss = stage >= HEAVEN_LEVEL ? Infinity : BOSS_TRAVEL_SECONDS;
+  G.bossTime = 0; G.tut = null; hideTut();
+  if (bossIndex != null) { G.bossTime = G.nextBoss; startBoss(); }
+  saveGame(); updHUD();
+  toast(bossIndex != null ? "⚠️ BOSS REMATCH!" : "🛹 COURSE REVISIT!");
+}
+function replayHellLevel(v) { replayFromHell(v, null); }
+function replayHellBoss(v) { const stage = +v; replayFromHell(stage, stage - 1); }
+function replayFinalBoss() { replayFromHell(NORMAL_LEVELS, BS.length - 1); }
+function replayHeaven() { replayFromHell(HEAVEN_LEVEL, null); }
+function cheatSkipHeaven() {
+  if (!save.cJ && !save.cS) return;
+  X();
+  if (!G.running) { G.running = true; save.seen = 1; resetGame(false); }
+  const finalBoss = !!(G.boss && !G.boss.secret && G.bossIndex === BS.length - 1);
+  G.tut = null; G.boss = null; G.level = finalBoss ? HELL_LEVEL : HEAVEN_LEVEL; G.nextBoss = Infinity; G.levelDist = 0; G.bossTime = 0; G.secretBossTime = 0;
+  G.obs = []; G.cash = []; G.bul = []; G.wads = []; G.shards = []; G.lives = DF[save.diff].lives;
+  if (finalBoss) save.naetoDefeated = 0;
+  save.cp = { level: G.level, score: G.score }; if (finalBoss) save.completedGame = 1; saveGame(); hideTut(); $("rb").classList.remove("hidden"); updHUD();
+  if (finalBoss) { toast("🔥 CHEAT: FINAL BOSS SKIPPED · HELL REACHED", W / 2, H * .3); hellHub(); }
+  else toast("☁️ CHEAT: SKIPPED STRAIGHT TO HEAVEN", W / 2, H * .3);
+}
+function rebirth() {
+  if (G.level < HEAVEN_LEVEL) return;
+  save.rebirths++; save.coins = Math.floor(save.coins * .2);     // coins shrink, but you keep your shop items
+  ach("reb"); save.cp = { level: 1, score: 0 }; saveGame();
+  resetGame(); toast("REBIRTHED! " + rbm().toFixed(1) + "x 🔄 · NEXT: " + BS[G.bossIndex][0], W / 2, H * .4);
+}
+function gameOver() {
+  G.running = false; save.seen = 1; saveGame();
+  G.overInfo = { score: G.score, best: save.hs[hsKey()] || 0, isBest: G.score > G.bestStart, name: fr().name };
+  overScreen();
+}
+function overScreen() {
+  const o = G.overInfo, cp = save.cp;
+  G.home = "over";
+  M(`<h2>💀 GAME OVER</h2><p>Score: ${o.score.toLocaleString()} • Best (${o.name}, ${DF[save.diff].label}): ${o.best.toLocaleString()}${o.isBest ? " 🎉 NEW BEST!" : ""}</p>` +
+    (cp.level > 1 ? `<button data-a="cont">⏩ Continue from Level ${cp.level}</button> ` : "") +
+    `<button class="big" data-a="go">↺ New Run</button><p class="ctl">Press <b>Enter</b> or <b>R</b> to play again</p>`, "over");
+}
+// Full reset: wipes EVERYTHING (coins, rebirths, shop items, skaters, scores, cheats, photo) and starts fresh
+function resetAsk() {
+  M(`<h2>🗑 Full Reset</h2><p>This permanently erases <b>everything</b>: coins, rebirths, unlocked skaters, shop items, high scores, achievements, cheats and your photo.</p><p>Are you sure?</p>
+<button class="danger" data-a="resetDo">Yes, erase everything</button> <button data-a="back">Cancel</button>`);
+}
+function fullReset() {
+  noSave = true;
+  try { localStorage.removeItem(SAVE_KEY); LEGACY_KEYS.forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  save = defaultSave(); today = localDate(); save.daily = { d: today, p: 0, done: 0 };
+  G.img = null; G.overInfo = null; G.home = "start"; G.running = false; G.userPaused = false; keys = {};
+  noSave = false; saveGame();
+  syncMute(); resetGame();
+  startScreen("✅ Everything was erased — fresh start!");
+}
+
+/* click / input delegation (no inline handlers) */
+const ACTIONS = {
+  play, go: () => go(false), cont: () => go(true), shop: () => shop(), pause, fs, mute: () => setMuted(!save.muted), muteS: () => { setMuted(!save.muted); settings(); },
+  menu: () => $("menu").classList.toggle("hidden"), guide, ability: selectAbility, rebirth, hellHub, hellReturn: returnToHell, hellRun: replayHellLevel, hellBoss: replayHellBoss, hellFinal: replayFinalBoss, hellSky: replayHeaven, cheatUI: () => cheatUI(), cheatMoney, cheatBoss: cheatSkipBoss, cheatHeaven: cheatSkipHeaven, roster, scores: v => scores(v), goals, settings,
+  tutorial: () => startTutorial(), tutSkip: endTutorial, tutDone: endTutorial, resetAsk, resetDo: fullReset, back,
+  setD: v => setDiff(v), eq: v => equip(v), sel: v => selectSkater(v), tg: v => toggleCheat(v), cheat, fx: toggleFx, photoOff: removePhoto
+};
+document.addEventListener("click", e => {
+  const btn = e.target.closest && e.target.closest("button");
+  const el = e.target.closest && e.target.closest("[data-a]");
+  if (el && ACTIONS[el.dataset.a]) ACTIONS[el.dataset.a](el.dataset.v);
+  if (btn && btn.blur) btn.blur();                 // stops Space from re-pressing the last clicked button
+});
+document.addEventListener("input", e => {
+  const k = e.target.dataset && e.target.dataset.in;
+  if (k === "vm" || k === "vs") { save[k] = +e.target.value; dirty = true; }
+});
+document.addEventListener("change", e => {
+  const k = e.target.dataset && e.target.dataset.in;
+  if (k === "vs") SFX.coin();
+});
+$("ph").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const i = new Image();
+    i.onload = () => {
+      const c = document.createElement("canvas"); c.width = c.height = 64;
+      const s = Math.min(i.width, i.height);
+      c.getContext("2d").drawImage(i, (i.width - s) / 2, (i.height - s) / 2, s, s, 0, 0, 64, 64);
+      save.photo = c.toDataURL("image/jpeg", .8); setPhoto(save.photo); saveGame(); toast("PHOTO EQUIPPED! 📸");
+    };
+    i.src = r.result;
+  };
+  r.readAsDataURL(f);
+};
+document.addEventListener("visibilitychange", () => {
+  keys = {};
+  if (document.hidden && G.running && !G.modal) pause(); else if (!document.hidden) initAudio();
+});
+["pointerdown", "keydown", "touchstart"].forEach(ev => addEventListener(ev, initAudio, { passive: true }));
+
+/* ---------- 13. BOOT ---------- */
+loadSave();
+if (storageError) $("saveWarn").classList.remove("hidden");
+if (!item(save.eq.outfit)) save.eq.outfit = "none";
+refreshDaily();
+addEventListener("resize", resize);
+setInterval(() => { if (dirty) saveGame(); }, 3000);
+addEventListener("pagehide", saveGame);
+resize(); resetGame(); setPhoto(save.photo); syncMute(); startScreen();
+last = performance.now(); requestAnimationFrame(loop); music();
+</script>
+</body>
+</html>
+
+
